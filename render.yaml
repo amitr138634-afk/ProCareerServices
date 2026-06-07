@@ -1,0 +1,79 @@
+services:
+  - type: web
+    name: procareerlaunchpad
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SKIP_PAYMENT
+        value: false
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: GROQ_FALLBACK_MODEL
+        value: deepseek-r1-distill-llama-70b
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: meta-llama/llama-3.3-70b-instruct:free
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CLAUDE_MODEL
+        value: claude-sonnet-4-5
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_RAZORPAY_KEY_ID
+        sync: false
+      - key: NEXT_PUBLIC_AMOUNT
+        value: 20000
+      - key: NEXT_PUBLIC_AMOUNT_DISPLAY
+        value: 200
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: procareerlaunchpad
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SMTP_TO
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: NEXT_PUBLIC_INSTAGRAM_URL
+        sync: false
+      - key: NEXT_PUBLIC_LINKEDIN_URL
+        sync: false
+      - key: NEXT_PUBLIC_FACEBOOK_URL
+        sync: false
+      - key: NEXT_PUBLIC_TAWKTO_PROPERTY_ID
+        value: 6a1f74a04a36f41c2edef302
+      - key: NEXT_PUBLIC_TAWKTO_WIDGET_ID
+        value: 1jq5dv5tt
