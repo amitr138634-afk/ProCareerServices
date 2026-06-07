@@ -13,7 +13,7 @@ A full-stack Next.js 14 platform offering AI-powered career tools, payment proce
 2. [Features Overview](#features-overview)
 3. [Run Locally](#run-locally)
 4. [Environment Variables](#environment-variables)
-5. [Deploy on Render](#deploy-on-render)
+5. [Deploy on Vercel](#deploy-on-vercel)
 6. [Admin Panel Guide](#admin-panel-guide)
 7. [Folder Structure](#folder-structure)
 
@@ -33,7 +33,7 @@ A full-stack Next.js 14 platform offering AI-powered career tools, payment proce
 | Email | Resend |
 | PDF Export | jsPDF |
 | Resume Parsing | pdf-parse · mammoth |
-| Deployment | Render (Node.js server) |
+| Deployment | Vercel (serverless, free tier) |
 
 ---
 
@@ -167,8 +167,8 @@ Password-protected admin dashboard. See the [Admin Panel Guide](#admin-panel-gui
 
 **1. Clone the repository**
 ```bash
-git clone <your-repo-url>
-cd linkedinoptmization
+git clone https://github.com/amitr138634-afk/ProCareerServices.git
+cd ProCareerServices
 ```
 
 **2. Install dependencies**
@@ -246,6 +246,7 @@ This lets you access all AI tools without paying. **Remove this before going liv
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Yes | Same as `RAZORPAY_KEY_ID` — exposed to browser for checkout |
 | `NEXT_PUBLIC_AMOUNT` | Yes | Price in paise (e.g. `20000` = ₹200) |
 | `NEXT_PUBLIC_AMOUNT_DISPLAY` | Yes | Display price (e.g. `200`) |
+| `NEXT_PUBLIC_SITE_URL` | Yes | Full URL of the site — used in emails, PDFs, and AI chatbot links. `http://localhost:3000` locally, your Vercel URL in production |
 | `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret |
 | `NEXTAUTH_SECRET` | Yes | Any random 32+ character string for session encryption |
@@ -271,7 +272,7 @@ This lets you access all AI tools without paying. **Remove this before going liv
 5. Application type: **Web application**
 6. Add Authorized redirect URIs:
    - `http://localhost:3000/api/auth/callback/google` (local)
-   - `https://your-render-domain.onrender.com/api/auth/callback/google` (production)
+   - `https://your-app.vercel.app/api/auth/callback/google` (production)
 7. Copy the Client ID and Client Secret
 
 ### How to get MongoDB URI
@@ -282,94 +283,115 @@ This lets you access all AI tools without paying. **Remove this before going liv
 
 ---
 
-## Deploy on Render
+## Deploy on Vercel
+
+Vercel is the recommended deployment platform — it's made by the same team as Next.js and the free Hobby tier is sufficient for this project.
 
 ### 1. Push your code to GitHub
+
+If not already done:
 ```bash
 git init
 git add .
 git commit -m "initial commit"
-git remote add origin https://github.com/your-username/your-repo.git
+git remote add origin https://github.com/your-username/ProCareerServices.git
 git push -u origin main
 ```
 
-### 2. Create a new Web Service on Render
+If code is already on GitHub (this project is at `amitr138634-afk/ProCareerServices`):
+```bash
+git add .
+git commit -m "your message"
+git push
+```
 
-1. Go to [render.com](https://render.com) and sign in
-2. Click **New → Web Service**
-3. Connect your GitHub repository
-4. Configure the service:
+### 2. Import the project into Vercel
 
-| Setting | Value |
+1. Go to [vercel.com](https://vercel.com) and sign in (use GitHub login — it's free)
+2. Click **Add New → Project**
+3. Click **Import** next to `amitr138634-afk/ProCareerServices`
+4. Framework is auto-detected as **Next.js** — leave as-is
+5. Root directory: leave blank (project root)
+
+### 3. Add environment variables
+
+Before clicking **Deploy**, expand **Environment Variables** and add every key from the [Environment Variables](#environment-variables) table. Key values for production:
+
+| Key | Production value |
 |---|---|
-| **Name** | `procareerlaunchpad` (or any name) |
-| **Region** | Singapore (closest to India) |
-| **Branch** | `main` |
-| **Runtime** | `Node` |
-| **Build Command** | `npm install && npm run build` |
-| **Start Command** | `npm start` |
-| **Instance Type** | Free (or Starter for better performance) |
+| `NEXT_PUBLIC_SITE_URL` | `https://your-app.vercel.app` *(set after first deploy)* |
+| `NEXTAUTH_URL` | `https://your-app.vercel.app` *(set after first deploy)* |
+| `NEXT_PUBLIC_SKIP_PAYMENT` | `false` |
+| All API keys | Same as your `.env.local` values |
 
-### 3. Add environment variables on Render
+> **Tip:** You can also add env vars later in **Project Settings → Environment Variables** and then redeploy.
 
-In your Render service dashboard:
-1. Go to **Environment** tab
-2. Click **Add Environment Variable** for each variable
-3. Add **all** variables from the [Environment Variables](#environment-variables) table above
-4. For `NEXTAUTH_URL`, use your Render domain: `https://your-service.onrender.com`
+### 4. Click Deploy
 
-> **Important:** Never commit `.env.local` to GitHub. It contains secret keys.
+Vercel builds and deploys automatically. Build takes about 2–3 minutes. When done, you get a URL like `https://procareerservices.vercel.app`.
 
-### 4. Add a `render.yaml` (optional — for one-click deploy)
+### 5. Update NEXTAUTH_URL and NEXT_PUBLIC_SITE_URL
 
-Create a file `render.yaml` in your project root:
+Once you have your Vercel URL:
+1. Go to **Project Settings → Environment Variables** in Vercel
+2. Update `NEXTAUTH_URL` → `https://your-app.vercel.app`
+3. Update `NEXT_PUBLIC_SITE_URL` → `https://your-app.vercel.app`
+4. Go to **Deployments** tab → click the three dots → **Redeploy**
 
-```yaml
-services:
-  - type: web
-    name: procareerlaunchpad
-    runtime: node
-    region: singapore
-    buildCommand: npm install && npm run build
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NEXTAUTH_URL
-        fromService:
-          type: web
-          name: procareerlaunchpad
-          property: host
-```
+### 6. Update Google OAuth redirect URI
 
-### 5. Update Google OAuth redirect URI for production
-
-After your Render URL is live (e.g. `https://procareerlaunchpad.onrender.com`):
-
-1. Go back to [Google Cloud Console](https://console.cloud.google.com) → Credentials
+1. Go to [Google Cloud Console](https://console.cloud.google.com) → **APIs & Services → Credentials**
 2. Edit your OAuth 2.0 client
-3. Add the production redirect URI:
+3. Under **Authorized redirect URIs**, add:
    ```
-   https://procareerlaunchpad.onrender.com/api/auth/callback/google
+   https://your-app.vercel.app/api/auth/callback/google
    ```
-4. Save
+4. Click **Save**
 
-### 6. Update Razorpay webhook (if using webhooks)
+### 7. Update MongoDB Atlas network access
 
-In your Razorpay dashboard → Webhooks, add:
+1. Go to [MongoDB Atlas](https://cloud.mongodb.com) → **Network Access**
+2. Click **Add IP Address → Allow Access from Anywhere** (`0.0.0.0/0`)
+3. This is required because Vercel uses dynamic IPs for serverless functions
+
+### 8. (Optional) Add a custom domain
+
+In Vercel → **Project Settings → Domains**, add your own domain (e.g. `procareerlaunchpad.com`). Vercel provisions an SSL certificate automatically.
+
+After adding a custom domain:
+- Update `NEXTAUTH_URL` → `https://procareerlaunchpad.com`
+- Update `NEXT_PUBLIC_SITE_URL` → `https://procareerlaunchpad.com`
+- Add `https://procareerlaunchpad.com/api/auth/callback/google` to Google OAuth
+- Redeploy
+
+### Function timeout configuration
+
+The `vercel.json` in the project root already sets extended timeouts for heavy AI routes:
+
+```json
+{
+  "functions": {
+    "app/api/ats-scan/route.ts":        { "maxDuration": 60 },
+    "app/api/linkedin/route.ts":        { "maxDuration": 60 },
+    "app/api/chat/route.ts":            { "maxDuration": 30 },
+    "app/api/generate-report/route.ts": { "maxDuration": 30 }
+  },
+  "regions": ["sin1"]
+}
 ```
-https://procareerlaunchpad.onrender.com/api/pay/verify
-```
 
-### Common Render Issues
+`sin1` = Singapore region (fastest from India). No changes needed.
+
+### Common Vercel Issues
 
 | Issue | Fix |
 |---|---|
-| Build fails with "out of memory" | Upgrade to Starter instance |
-| `NEXTAUTH_URL` mismatch error | Make sure the env var matches your exact Render domain including `https://` |
-| PDF parsing error | Ensure `pdf-parse` is in `dependencies`, not `devDependencies` |
-| Cold start is slow | Free tier sleeps after 15 min inactivity — upgrade to Starter to avoid |
+| `NEXTAUTH_URL` mismatch / login redirect loop | Update `NEXTAUTH_URL` env var to exact Vercel domain including `https://`, then redeploy |
+| Google sign-in fails | Add the Vercel domain to Google OAuth Authorized redirect URIs |
 | MongoDB connection timeout | Whitelist `0.0.0.0/0` in MongoDB Atlas → Network Access |
+| PDF parsing fails in production | Ensure `pdf-parse` and `mammoth` are in `dependencies` (not `devDependencies`) in `package.json` |
+| Environment variable not available | `NEXT_PUBLIC_*` vars must be set before build — if you add them after, you must redeploy |
+| AI routes timing out | The 60s limit in `vercel.json` covers most cases; if still failing, check AI provider keys |
 
 ---
 
@@ -463,15 +485,17 @@ Access the admin panel at `/admin`.
 
 Before going live, verify:
 
-- [ ] All environment variables are set on Render
-- [ ] `NEXT_PUBLIC_SKIP_PAYMENT` is `false` or removed
-- [ ] `NEXTAUTH_URL` points to your live Render domain
+- [ ] All environment variables are set in Vercel → Project Settings → Environment Variables
+- [ ] `NEXT_PUBLIC_SKIP_PAYMENT` is `false` (or not set)
+- [ ] `NEXTAUTH_URL` points to your live Vercel domain (e.g. `https://your-app.vercel.app`)
+- [ ] `NEXT_PUBLIC_SITE_URL` matches `NEXTAUTH_URL`
 - [ ] Google OAuth redirect URI updated for production domain
 - [ ] MongoDB Atlas network access allows `0.0.0.0/0`
 - [ ] Razorpay is using **live** keys (not test keys)
-- [ ] Admin email and password are changed to something secure
-- [ ] Social media URLs updated in env vars
+- [ ] Admin email and password are set to something secure
+- [ ] Social media URLs updated in env vars (`NEXT_PUBLIC_INSTAGRAM_URL`, etc.)
 - [ ] Tawk.to property ID added (optional but recommended for live chat)
+- [ ] Redeployed after updating `NEXTAUTH_URL` and `NEXT_PUBLIC_SITE_URL`
 
 ---
 
