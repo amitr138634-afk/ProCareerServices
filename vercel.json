@@ -1,0 +1,9 @@
+{
+  "functions": {
+    "app/api/ats-scan/route.ts": { "maxDuration": 60 },
+    "app/api/linkedin/route.ts": { "maxDuration": 60 },
+    "app/api/chat/route.ts": { "maxDuration": 30 },
+    "app/api/generate-report/route.ts": { "maxDuration": 30 }
+  },
+  "regions": ["sin1"]
+}
