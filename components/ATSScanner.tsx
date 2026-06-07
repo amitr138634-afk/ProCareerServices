@@ -193,42 +193,42 @@ export default function ATSScanner() {
         <div className="blob blob-2" style={{ bottom: "10%", right: "5%", width: 400, height: 400, background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)" }} />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 py-8">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 py-6 md:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="flex items-center gap-2 text-white/50 hover:text-white text-sm transition-colors">
+        <div className="flex items-center justify-between mb-6 md:mb-8 gap-2">
+          <Link href="/" className="flex items-center gap-1.5 text-white/50 hover:text-white text-sm transition-colors flex-shrink-0">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Back
+            <span className="hidden sm:inline">Back</span>
           </Link>
-          <span className="text-xs font-bold tracking-widest" style={{ background: "linear-gradient(90deg,#10B981,#0EA5E9,#8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <span className="text-[10px] md:text-xs font-bold tracking-widest truncate" style={{ background: "linear-gradient(90deg,#10B981,#0EA5E9,#8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             PROCAREERLAUNCHPAD
           </span>
           <button
             onClick={() => { setResult(null); setFile(null); setFileName(""); setJobDescription(""); setSelectedTemplate(""); localStorage.removeItem(ATS_SESSION_KEY); }}
-            className="text-white/20 hover:text-white/50 text-[11px] transition-colors"
+            className="text-white/20 hover:text-white/50 text-[11px] transition-colors flex-shrink-0"
           >
             ↺ Reset
           </button>
         </div>
 
         {/* Hero */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-teal/30 bg-brand-teal/5 text-brand-teal text-xs font-semibold mb-4">
+        <div className="text-center mb-7 md:mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-teal/30 bg-brand-teal/5 text-brand-teal text-xs font-semibold mb-3 md:mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-teal animate-pulse" />
             ATS RESUME SCANNER
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-3">
+          <h1 className="text-2xl md:text-4xl font-black text-white mb-3">
             Beat the <span style={{ background: "linear-gradient(90deg,#10B981,#0EA5E9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>ATS Filter</span>
           </h1>
           <p className="text-white/50 text-sm max-w-md mx-auto">Upload your resume, paste the job description, and get an ATS compatibility score with actionable fixes.</p>
           {!hasPaid && (
-            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs">
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs text-center">
               Free scan: score + 2 recommendations · Pay ₹200 for full report
             </div>
           )}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-5 md:mb-6">
           {/* Upload */}
           <div className="glass-dark rounded-2xl p-5">
             <h2 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
@@ -293,9 +293,9 @@ export default function ATSScanner() {
         </div>
 
         {error && <p className="text-red-400 text-xs text-center mb-3">{error}</p>}
-        <div className="text-center mb-10">
+        <div className="text-center mb-8 md:mb-10">
           <button onClick={handleScan} disabled={isScanning || !file || !jobDescription.trim()}
-            className="px-10 py-3.5 rounded-xl font-black text-sm text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all relative overflow-hidden group"
+            className="w-full sm:w-auto px-10 py-3.5 rounded-xl font-black text-sm text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all relative overflow-hidden group"
             style={{ background: "linear-gradient(135deg, #10B981, #0EA5E9)" }}>
             <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all" />
             <span className="relative flex items-center gap-2">
@@ -308,7 +308,7 @@ export default function ATSScanner() {
           <div className="space-y-5">
             <div className="glass-dark rounded-2xl p-6">
               <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="flex-shrink-0"><ScoreRing score={result.atsScore} size={130} /></div>
+                <div className="flex-shrink-0"><ScoreRing score={result.atsScore} size={110} /></div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
                     <h2 className="text-white font-black text-xl">ATS Score</h2>

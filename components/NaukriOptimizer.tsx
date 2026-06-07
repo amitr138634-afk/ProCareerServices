@@ -56,7 +56,7 @@ function MessageBubble({ msg }: { msg: Message }) {
           style={{ background: `linear-gradient(135deg,${NAUKRI_COLOR},#F97316)` }}>N</div>
       )}
       <div
-        className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+        className={`max-w-[88%] md:max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
           isUser ? "rounded-tr-none text-white/90" : "glass rounded-tl-none text-white/80"
         }`}
         style={isUser ? { background: `rgba(255,107,53,0.12)`, border: `1px solid rgba(255,107,53,0.2)` } : undefined}
@@ -141,7 +141,7 @@ function StepSidebar({ currentIndex, completedSteps, hasPaid }: {
   currentIndex: number; completedSteps: Set<number>; hasPaid: boolean;
 }) {
   return (
-    <div className="w-52 flex-shrink-0 glass-dark border-r border-white/5 overflow-y-auto flex flex-col">
+    <div className="hidden md:flex w-52 flex-shrink-0 glass-dark border-r border-white/5 overflow-y-auto flex-col">
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-xs"
@@ -200,7 +200,7 @@ function StepSidebar({ currentIndex, completedSteps, hasPaid }: {
 function TodoPanel({ todos, onToggle }: { todos: Todo[]; onToggle: (id: string) => void }) {
   const remaining = todos.filter((t) => !t.completed).length;
   return (
-    <div className="w-60 flex-shrink-0 glass-dark border-l border-white/5 overflow-y-auto">
+    <div className="hidden md:block w-60 flex-shrink-0 glass-dark border-l border-white/5 overflow-y-auto">
       <div className="p-4 border-b border-white/5">
         <h3 className="text-sm font-black text-white">Action Items</h3>
         <p className="text-[11px] text-white/30 mt-0.5">{remaining} remaining</p>
@@ -238,6 +238,7 @@ export default function NaukriOptimizer() {
   const [hasPaid, setHasPaid] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [stepResponses, setStepResponses] = useState<Record<string, string>>({});
+  const [showMobileTodos, setShowMobileTodos] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const addMessage = useCallback((role: "user" | "assistant", content: string) => {
@@ -431,25 +432,44 @@ export default function NaukriOptimizer() {
       {/* Chat Column */}
       <div className="relative z-10 flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="glass-dark border-b border-white/5 px-6 py-3 flex items-center justify-between">
-          <div>
-            <h1 className="text-sm font-black text-white">Naukri Profile Optimizer</h1>
-            <p className="text-[11px] text-white/30">
-              Step {Math.min(currentStepIndex + 1, NAUKRI_STEPS.length)} / {NAUKRI_STEPS.length} — {currentStep.label}
+        <div className="glass-dark border-b border-white/5 px-3 md:px-6 py-2.5 flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xs md:text-sm font-black text-white truncate">Naukri Profile Optimizer</h1>
+            <p className="text-[10px] text-white/30 truncate">
+              Step {Math.min(currentStepIndex + 1, NAUKRI_STEPS.length)}/{NAUKRI_STEPS.length} — {currentStep.label}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
             {!hasPaid && currentStepIndex < FREE_STEPS_COUNT && (
-              <span className="text-[10px] font-bold uppercase tracking-widest glass px-3 py-1 rounded-full" style={{ color: NAUKRI_COLOR }}>Free</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest glass px-2 md:px-3 py-0.5 rounded-full" style={{ color: NAUKRI_COLOR }}>Free</span>
             )}
-            {hasPaid && <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: NAUKRI_COLOR }}>Full Access</span>}
-            <div className="flex items-center gap-2">
-              <div className="h-1 w-32 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            {hasPaid && <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-widest" style={{ color: NAUKRI_COLOR }}>Full Access</span>}
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="h-1 w-20 md:w-32 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
                 <div className="h-full rounded-full transition-all duration-700"
                   style={{ width: `${progressPct}%`, background: `linear-gradient(90deg,${NAUKRI_COLOR},#F97316)` }} />
               </div>
               <span className="text-[11px] text-white/30">{progressPct}%</span>
             </div>
+            <span className="sm:hidden text-[10px] text-white/40 font-bold">{progressPct}%</span>
+
+            {/* Mobile: action items button */}
+            <button
+              onClick={() => setShowMobileTodos(true)}
+              className="md:hidden relative flex items-center justify-center w-7 h-7 rounded-lg border border-white/10 text-white/40"
+              title="Action items"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              {todos.filter(t => !t.completed).length > 0 && (
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full text-white text-[8px] font-black flex items-center justify-center"
+                  style={{ background: NAUKRI_COLOR }}>
+                  {todos.filter(t => !t.completed).length}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => {
                 if (!confirm("Start a new session? Your current progress will be cleared.")) return;
@@ -457,14 +477,19 @@ export default function NaukriOptimizer() {
                 localStorage.removeItem(PAID_KEY);
                 window.location.reload();
               }}
-              className="text-[10px] text-white/20 hover:text-white/50 transition-colors ml-1"
-              title="Start fresh"
-            >↺ Reset</button>
+              className="flex items-center gap-1 px-2 md:px-3 py-1.5 rounded-lg border border-white/10 text-[10px] text-white/40 hover:text-white/60 transition-colors"
+              title="Reset"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span className="hidden sm:inline">Reset</span>
+            </button>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto chat-scroll px-6 py-5 space-y-4">
+        <div className="flex-1 overflow-y-auto chat-scroll px-3 md:px-6 py-4 space-y-4">
           {messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)}
           {isLoading && <TypingIndicator aiStep={NAUKRI_STEPS[currentStepIndex]?.aiAnalysis} />}
           {showPaywall && !hasPaid && (
@@ -509,6 +534,41 @@ export default function NaukriOptimizer() {
       </div>
 
       <TodoPanel todos={todos} onToggle={(id) => setTodos((prev) => prev.map((t) => t.id === id ? { ...t, completed: !t.completed } : t))} />
+
+      {/* Mobile Action Items Drawer */}
+      {showMobileTodos && (
+        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowMobileTodos(false)} />
+          <div className="relative bg-[#0d0d2b] border-t border-white/10 rounded-t-2xl max-h-[70vh] flex flex-col">
+            <div className="p-4 border-b border-white/8 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-white">Action Items</h3>
+                <p className="text-[11px] text-white/30">{todos.filter(t => !t.completed).length} remaining</p>
+              </div>
+              <button onClick={() => setShowMobileTodos(false)} className="text-white/40 hover:text-white p-1">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-3 space-y-2">
+              {todos.length === 0 ? (
+                <p className="text-center text-white/20 text-xs pt-8">Recommendations appear here as you progress.</p>
+              ) : todos.map((todo) => (
+                <div key={todo.id}
+                  className="flex items-start gap-2 p-2 rounded-lg hover:bg-white/5 cursor-pointer"
+                  onClick={() => setTodos(p => p.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t))}>
+                  <div className={`w-4 h-4 rounded border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all ${todo.completed ? "border-[#FF6B35]" : "border-white/20"}`}
+                    style={todo.completed ? { background: NAUKRI_COLOR, borderColor: NAUKRI_COLOR } : undefined}>
+                    {todo.completed && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                  </div>
+                  <span className={`text-xs leading-relaxed ${todo.completed ? "line-through text-white/20" : "text-white/60"}`}>{todo.action}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

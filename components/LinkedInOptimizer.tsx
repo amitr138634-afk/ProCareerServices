@@ -68,7 +68,7 @@ function MessageBubble({ msg }: { msg: Message }) {
         </div>
       )}
       <div
-        className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+        className={`max-w-[88%] md:max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
           isUser
             ? "rounded-tr-none text-white/90"
             : "glass rounded-tl-none text-white/80"
@@ -208,7 +208,7 @@ function StepSidebar({
   hasPaid: boolean;
 }) {
   return (
-    <div className="w-52 flex-shrink-0 glass-dark border-r border-white/5 overflow-y-auto flex flex-col">
+    <div className="hidden md:flex w-52 flex-shrink-0 glass-dark border-r border-white/5 overflow-y-auto flex-col">
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-xs">P</div>
@@ -265,7 +265,7 @@ function StepSidebar({
 function TodoPanel({ todos, onToggle }: { todos: Todo[]; onToggle: (id: string) => void }) {
   const remaining = todos.filter((t) => !t.completed).length;
   return (
-    <div className="w-60 flex-shrink-0 glass-dark border-l border-white/5 overflow-y-auto">
+    <div className="hidden md:block w-60 flex-shrink-0 glass-dark border-l border-white/5 overflow-y-auto">
       <div className="p-4 border-b border-white/5">
         <h3 className="text-sm font-black text-white">Action Items</h3>
         <p className="text-[11px] text-white/30 mt-0.5">{remaining} remaining</p>
@@ -317,6 +317,7 @@ export default function LinkedInOptimizer() {
   const [stepResponses, setStepResponses] = useState<Record<string, string>>({});
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
+  const [showMobileTodos, setShowMobileTodos] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const addMessage = useCallback((role: "user" | "assistant", content: string) => {
@@ -678,48 +679,60 @@ export default function LinkedInOptimizer() {
       {/* Chat Column */}
       <div className="relative z-10 flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="glass-dark border-b border-white/5 px-6 py-3 flex items-center justify-between">
-          <div>
-            <h1 className="text-sm font-black text-white">LinkedIn Profile Optimizer</h1>
-            <p className="text-[11px] text-white/30">
-              Step {Math.min(currentStepIndex + 1, OPTIMIZATION_STEPS.length)} / {OPTIMIZATION_STEPS.length} — {currentStep.label}
+        <div className="glass-dark border-b border-white/5 px-3 md:px-6 py-2.5 flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xs md:text-sm font-black text-white truncate">LinkedIn Profile Optimizer</h1>
+            <p className="text-[10px] text-white/30 truncate">
+              Step {Math.min(currentStepIndex + 1, OPTIMIZATION_STEPS.length)}/{OPTIMIZATION_STEPS.length} — {currentStep.label}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
             {!hasPaid && currentStepIndex < FREE_STEPS_COUNT && (
-              <span className="text-[10px] font-bold text-brand-teal uppercase tracking-widest glass px-3 py-1 rounded-full">
-                Free
-              </span>
+              <span className="text-[10px] font-bold text-brand-teal uppercase tracking-widest glass px-2 md:px-3 py-0.5 rounded-full">Free</span>
             )}
             {hasPaid && (
-              <span className="text-[10px] font-bold gradient-text uppercase tracking-widest">
-                Full Access
-              </span>
+              <span className="hidden sm:inline text-[10px] font-bold gradient-text uppercase tracking-widest">Full Access</span>
             )}
-            <div className="flex items-center gap-2">
-              <div className="h-1 w-32 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{ width: `${progressPct}%`, background: "linear-gradient(90deg, #0EA5E9, #10B981)" }}
-                />
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="h-1 w-20 md:w-32 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                <div className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${progressPct}%`, background: "linear-gradient(90deg, #0EA5E9, #10B981)" }} />
               </div>
               <span className="text-[11px] text-white/30">{progressPct}%</span>
             </div>
+            <span className="sm:hidden text-[10px] text-white/40 font-bold">{progressPct}%</span>
+
+            {/* Mobile: action items button */}
+            <button
+              onClick={() => setShowMobileTodos(true)}
+              className="md:hidden relative flex items-center justify-center w-7 h-7 rounded-lg border border-white/10 text-white/40"
+              title="Action items"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              {todos.filter(t => !t.completed).length > 0 && (
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-brand-teal text-white text-[8px] font-black flex items-center justify-center">
+                  {todos.filter(t => !t.completed).length}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={handleRestart}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-[10px] text-white/40 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all ml-1"
-              title="Restart analysis from beginning"
+              className="flex items-center gap-1 px-2 md:px-3 py-1.5 rounded-lg border border-white/10 text-[10px] text-white/40 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all"
+              title="Restart"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Restart
+              <span className="hidden sm:inline">Restart</span>
             </button>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto chat-scroll px-6 py-5 space-y-4">
+        <div className="flex-1 overflow-y-auto chat-scroll px-3 md:px-6 py-4 space-y-4">
           {messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)}
           {isLoading && <TypingIndicator aiStep={OPTIMIZATION_STEPS[currentStepIndex]?.aiAnalysis} />}
           {showPaywall && !hasPaid && (
@@ -920,30 +933,39 @@ export default function LinkedInOptimizer() {
 
       <TodoPanel todos={todos} onToggle={(id) => setTodos((p) => p.map((t) => t.id === id ? { ...t, completed: !t.completed } : t))} />
 
-      {/* ── Follow us strip ── */}
-      <div className="mt-8 py-6 border-t border-white/5 text-center">
-        <p className="text-white/25 text-xs tracking-widest uppercase mb-4">Stay Connected</p>
-        <div className="flex items-center justify-center gap-4">
-          <a href={process.env.NEXT_PUBLIC_INSTAGRAM_URL || "#"} target="_blank" rel="noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-white hover:scale-105 transition-all"
-            style={{ background: "linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)" }}>
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.326 3.608 1.301.975.975 1.24 2.242 1.301 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.061 1.366-.326 2.633-1.301 3.608-.975.975-2.242 1.24-3.608 1.301-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.061-2.633-.326-3.608-1.301-.975-.975-1.24-2.242-1.301-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.061-1.366.326-2.633 1.301-3.608.975-.975 2.242-1.24 3.608-1.301C8.416 2.175 8.796 2.163 12 2.163zm0-2.163C8.741 0 8.332.014 7.052.072 5.197.157 3.355.673 2.014 2.014.673 3.355.157 5.197.072 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.085 1.855.601 3.697 1.942 5.038 1.341 1.341 3.183 1.857 5.038 1.942C8.332 23.986 8.741 24 12 24s3.668-.014 4.948-.072c1.855-.085 3.697-.601 5.038-1.942 1.341-1.341 1.857-3.183 1.942-5.038.058-1.28.072-1.689.072-4.948 0-3.259-.014-3.668-.072-4.948-.085-1.855-.601-3.697-1.942-5.038C20.645.673 18.803.157 16.948.072 15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-            Instagram
-          </a>
-          <a href={process.env.NEXT_PUBLIC_LINKEDIN_URL || "#"} target="_blank" rel="noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-white hover:scale-105 transition-all"
-            style={{ background: "#0077B5" }}>
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-            LinkedIn
-          </a>
-          <a href={process.env.NEXT_PUBLIC_FACEBOOK_URL || "#"} target="_blank" rel="noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-white hover:scale-105 transition-all"
-            style={{ background: "#1877F2" }}>
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.532-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.269h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-            Facebook
-          </a>
+      {/* Mobile Action Items Drawer */}
+      {showMobileTodos && (
+        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowMobileTodos(false)} />
+          <div className="relative bg-[#0d0d2b] border-t border-white/10 rounded-t-2xl max-h-[70vh] flex flex-col">
+            <div className="p-4 border-b border-white/8 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-white">Action Items</h3>
+                <p className="text-[11px] text-white/30">{todos.filter(t => !t.completed).length} remaining</p>
+              </div>
+              <button onClick={() => setShowMobileTodos(false)} className="text-white/40 hover:text-white p-1">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-3 space-y-2">
+              {todos.length === 0 ? (
+                <p className="text-center text-white/20 text-xs pt-8">Recommendations appear here as you progress.</p>
+              ) : todos.map((todo) => (
+                <div key={todo.id}
+                  className="flex items-start gap-2 p-2 rounded-lg hover:bg-white/5 cursor-pointer"
+                  onClick={() => setTodos(p => p.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t))}>
+                  <div className={`w-4 h-4 rounded border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all ${todo.completed ? "bg-brand-teal border-brand-teal" : "border-white/20"}`}>
+                    {todo.completed && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                  </div>
+                  <span className={`text-xs leading-relaxed ${todo.completed ? "line-through text-white/20" : "text-white/60"}`}>{todo.action}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
