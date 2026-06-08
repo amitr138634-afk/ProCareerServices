@@ -4,6 +4,7 @@ import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import SpaceBackground from "@/components/SpaceBackground";
 import ChatWidget from "@/components/ChatWidget";
+import { Analytics } from "@vercel/analytics/next";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SpaceBackground />
           {children}
           <ChatWidget />
+          <Analytics />
         </SessionProvider>
       </body>
     </html>
