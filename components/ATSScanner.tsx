@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { usePaid } from "./PaidContext";
+import ProfessionalHelpButton from "./ProfessionalHelpButton";
 
 const ATS_SESSION_KEY = "procareer_ats_session";
 
@@ -407,6 +408,12 @@ export default function ATSScanner() {
                 ))}
               </div>
             </div>
+
+            {hasPaid && (
+              <div className="glass-dark rounded-2xl px-5 pb-2 pt-1">
+                <ProfessionalHelpButton service="ATS Scanner" />
+              </div>
+            )}
 
             <div className="text-center pb-8">
               <button onClick={() => { setResult(null); setFile(null); setFileName(""); setJobDescription(""); setSelectedTemplate(""); localStorage.removeItem(ATS_SESSION_KEY); }}

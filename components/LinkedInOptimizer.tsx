@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { OPTIMIZATION_STEPS, COMPETENCY_OPTIONS } from "@/lib/steps";
 import { generateProfileReport } from "@/lib/generateReport";
 import { usePaid } from "./PaidContext";
+import ProfessionalHelpButton from "./ProfessionalHelpButton";
 
 declare global {
   interface Window {
@@ -927,6 +928,8 @@ export default function LinkedInOptimizer() {
             >
               ↺ Start a new analysis
             </button>
+
+            {hasPaid && <ProfessionalHelpButton service="LinkedIn Optimizer" />}
           </div>
         )}
       </div>

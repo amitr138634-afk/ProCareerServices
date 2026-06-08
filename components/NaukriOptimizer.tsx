@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { NAUKRI_STEPS } from "@/lib/naukri-steps";
 import { usePaid } from "./PaidContext";
+import ProfessionalHelpButton from "./ProfessionalHelpButton";
 
 declare global {
   interface Window {
@@ -527,8 +528,9 @@ export default function NaukriOptimizer() {
         )}
 
         {isComplete && (
-          <div className="glass-dark border-t border-white/5 p-4 text-center">
-            <p className="text-white/50 text-sm font-semibold">🎉 Your Naukri profile is fully optimized! Check your Action Items →</p>
+          <div className="glass-dark border-t border-white/5 p-4">
+            <p className="text-white/50 text-sm font-semibold text-center">🎉 Your Naukri profile is fully optimized! Check your Action Items →</p>
+            {hasPaid && <ProfessionalHelpButton service="Naukri Optimizer" />}
           </div>
         )}
       </div>
