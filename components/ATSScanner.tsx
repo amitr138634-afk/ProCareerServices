@@ -187,6 +187,120 @@ export default function ATSScanner() {
   const scoreLabel = (s: number) => s >= 75 ? "Excellent" : s >= 60 ? "Good" : s >= 40 ? "Needs Work" : "Poor";
   const scoreColor = (s: number) => s >= 75 ? "text-brand-teal" : s >= 60 ? "text-yellow-400" : s >= 40 ? "text-orange-400" : "text-red-400";
 
+  const downloadReport = () => {
+    if (!result) return;
+    const date = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+    const sectionLabels: Record<string, string> = { contactInfo: "Contact Info", summary: "Professional Summary", experience: "Work Experience", education: "Education", skills: "Skills" };
+    const scoreBarHtml = (label: string, value: number, max: number) => {
+      const pct = Math.round((value / max) * 100);
+      const color = pct >= 70 ? "#10B981" : pct >= 40 ? "#F59E0B" : "#EF4444";
+      return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:#555">${label}</span><span style="font-weight:700;color:#333">${value}/${max}</span></div><div style="height:6px;background:#eee;border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${color};border-radius:4px"></div></div></div>`;
+    };
+    const scoreClr = result.atsScore >= 75 ? "#10B981" : result.atsScore >= 60 ? "#F59E0B" : result.atsScore >= 40 ? "#FB923C" : "#EF4444";
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>ATS Report — ProCareerLaunchpad</title><style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;background:#fff;padding:40px;max-width:800px;margin:0 auto}
+      @media print{body{padding:20px}@page{margin:15mm}}
+      .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #10B981;padding-bottom:16px;margin-bottom:24px}
+      .brand{font-size:18px;font-weight:900;color:#10B981;letter-spacing:-0.5px}
+      .brand span{color:#0EA5E9}
+      .meta{text-align:right;font-size:11px;color:#888;line-height:1.6}
+      .score-section{display:flex;align-items:center;gap:32px;background:#f8fffe;border:2px solid #10B98130;border-radius:12px;padding:20px 24px;margin-bottom:20px}
+      .score-ring{text-align:center;flex-shrink:0}
+      .score-number{font-size:52px;font-weight:900;line-height:1;color:${scoreClr}}
+      .score-label{font-size:13px;font-weight:700;color:${scoreClr};margin-top:2px}
+      .score-denom{font-size:16px;color:#aaa;font-weight:600}
+      .verdict{font-size:13px;color:#555;line-height:1.6;margin-top:8px}
+      .section{background:#fafafa;border:1px solid #eee;border-radius:10px;padding:16px 20px;margin-bottom:16px}
+      .section-title{font-size:13px;font-weight:800;color:#333;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+      .section-title span{color:#10B981}
+      .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+      .tag-found{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+      .tag-missing{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600}
+      .rec-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0}
+      .rec-item:last-child{border-bottom:none}
+      .rec-num{flex-shrink:0;width:22px;height:22px;background:#8B5CF620;color:#8B5CF6;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-top:1px}
+      .rec-text{font-size:12px;color:#444;line-height:1.6}
+      .strength-item{display:flex;gap:8px;padding:4px 0;font-size:12px;color:#444;align-items:flex-start}
+      .strength-check{color:#10B981;font-weight:900;flex-shrink:0;margin-top:1px}
+      .sections-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;text-align:center}
+      .sec-cell{padding:10px 4px}
+      .sec-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;margin:0 auto 6px}
+      .sec-icon.present{background:#dcfce7;color:#166534}
+      .sec-icon.missing{background:#fee2e2;color:#991b1b}
+      .sec-name{font-size:10px;font-weight:700;color:#555}
+      .sec-score{font-size:12px;font-weight:900;margin-top:2px}
+      .footer{margin-top:32px;padding-top:16px;border-top:1px solid #eee;text-align:center;font-size:11px;color:#aaa}
+      .footer a{color:#10B981;text-decoration:none;font-weight:600}
+    </style></head><body>
+      <div class="header">
+        <div><div class="brand">ProCareer<span>Launchpad</span></div><div style="font-size:12px;color:#888;margin-top:2px">ATS Resume Scan Report</div></div>
+        <div class="meta"><div>${date}</div>${fileName ? `<div>Resume: <b>${fileName}</b></div>` : ""}</div>
+      </div>
+
+      <div class="score-section">
+        <div class="score-ring">
+          <div class="score-number">${result.atsScore}<span class="score-denom">/100</span></div>
+          <div class="score-label">${scoreLabel(result.atsScore)}</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:900;color:#1a1a1a;margin-bottom:6px">ATS Compatibility Score</div>
+          <div class="verdict">${result.verdict}</div>
+          <div style="margin-top:14px">
+            ${scoreBarHtml("Keyword Match", result.scoreBreakdown.keywordMatch, 30)}
+            ${scoreBarHtml("Formatting", result.scoreBreakdown.formatting, 20)}
+            ${scoreBarHtml("Sections", result.scoreBreakdown.sections, 20)}
+            ${scoreBarHtml("Achievements", result.scoreBreakdown.achievements, 15)}
+            ${scoreBarHtml("Readability", result.scoreBreakdown.readability, 15)}
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span>✓</span> Keywords Found (${result.keywordsFound.length})</div>
+        <div class="tags">${result.keywordsFound.map(k => `<span class="tag-found">${k}</span>`).join("") || '<span style="color:#aaa;font-size:12px">No matching keywords found.</span>'}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title" style="color:#991b1b"><span>✗</span> Missing Keywords (${result.keywordsMissing.length})</div>
+        <div class="tags">${result.keywordsMissing.map(k => `<span class="tag-missing">${k}</span>`).join("") || '<span style="color:#aaa;font-size:12px">None detected.</span>'}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Section Analysis</div>
+        <div class="sections-grid">
+          ${Object.entries(result.sectionAnalysis).map(([key, val]) => `
+            <div class="sec-cell">
+              <div class="sec-icon ${val.present ? "present" : "missing"}">${val.present ? "✓" : "✗"}</div>
+              <div class="sec-name">${sectionLabels[key] ?? key}</div>
+              <div class="sec-score" style="color:${val.score >= 70 ? "#10B981" : val.score >= 40 ? "#F59E0B" : "#EF4444"}">${val.score}/100</div>
+              <div style="font-size:10px;color:#888;margin-top:3px;line-height:1.4">${val.note}</div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">⚡ Recommendations</div>
+        <div>${result.recommendations.map((rec, i) => `<div class="rec-item"><div class="rec-num">${i + 1}</div><div class="rec-text">${rec}</div></div>`).join("")}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">★ Top Strengths</div>
+        <div>${result.topStrengths.map(s => `<div class="strength-item"><span class="strength-check">✓</span><span>${s}</span></div>`).join("")}</div>
+      </div>
+
+      <div class="footer">Generated by <a href="https://procareerservices.vercel.app">ProCareerLaunchpad</a> · ${date} · Not for redistribution</div>
+    </body></html>`;
+
+    const printHtml = html.replace("</body>", `<script>window.onload=()=>setTimeout(()=>window.print(),300)</script></body>`);
+    const blob = new Blob([printHtml], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  };
+
   return (
     <div className="min-h-screen" style={{ background: "#07071A" }}>
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -311,9 +425,16 @@ export default function ATSScanner() {
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="flex-shrink-0"><ScoreRing score={result.atsScore} size={110} /></div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
+                  <div className="flex items-center gap-3 mb-1 flex-wrap">
                     <h2 className="text-white font-black text-xl">ATS Score</h2>
                     <span className={`text-sm font-black ${scoreColor(result.atsScore)}`}>{scoreLabel(result.atsScore)}</span>
+                    {hasPaid && (
+                      <button onClick={downloadReport}
+                        className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-brand-teal/30 bg-brand-teal/10 text-brand-teal hover:bg-brand-teal/20 transition-all">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Download Report
+                      </button>
+                    )}
                   </div>
                   <p className="text-white/50 text-sm mb-4">{result.verdict}</p>
                   <div className="grid grid-cols-1 gap-2">
