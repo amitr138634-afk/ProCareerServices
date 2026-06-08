@@ -32,7 +32,7 @@ function AnimatedBackground() {
   );
 }
 
-function TypingIndicator({ aiStep }: { aiStep?: boolean }) {
+function TypingIndicator({ label }: { label?: string }) {
   return (
     <div className="flex items-start gap-3 message-animate">
       <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-black"
@@ -43,7 +43,7 @@ function TypingIndicator({ aiStep }: { aiStep?: boolean }) {
           <span className="w-2 h-2 bg-white/40 rounded-full typing-dot" />
           <span className="w-2 h-2 bg-white/40 rounded-full typing-dot" />
         </div>
-        {aiStep && <span className="text-xs text-white/30">Analyzing your Naukri profile…</span>}
+        {label && <span className="text-xs text-white/30">Analyzing your {label.toLowerCase()}…</span>}
       </div>
     </div>
   );
@@ -609,7 +609,7 @@ export default function NaukriOptimizer() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto chat-scroll px-3 md:px-6 py-4 space-y-4">
           {messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)}
-          {isLoading && <TypingIndicator aiStep={NAUKRI_STEPS[currentStepIndex]?.aiAnalysis} />}
+          {isLoading && <TypingIndicator label={NAUKRI_STEPS[currentStepIndex]?.aiAnalysis ? NAUKRI_STEPS[currentStepIndex]?.label : undefined} />}
           {showPaywall && !hasPaid && (
             <PaywallCard profileData={profileData} onPayment={handlePaywallPayment} onSkip={handleSkipPayment} isProcessing={isPaymentProcessing} />
           )}
@@ -640,7 +640,14 @@ export default function NaukriOptimizer() {
                 </svg>
               </button>
             </div>
-            <p className="text-[10px] text-white/20 mt-2 px-1">Press Enter to send · Shift+Enter for new line</p>
+            <div className="flex items-center justify-between mt-2 px-1">
+              <p className="text-[10px] text-white/20">Press Enter to send · Shift+Enter for new line</p>
+              {currentStep.inputType === "textarea" && (
+                <span className={`text-[10px] font-semibold ${input.length < 40 && input.length > 0 ? "text-yellow-400/70" : "text-white/20"}`}>
+                  {input.length < 40 && input.length > 0 ? "Add more detail for better analysis" : `${input.length} chars`}
+                </span>
+              )}
+            </div>
           </div>
         )}
 

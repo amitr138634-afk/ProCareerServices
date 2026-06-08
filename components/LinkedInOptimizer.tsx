@@ -40,7 +40,7 @@ function AnimatedBackground() {
   );
 }
 
-function TypingIndicator({ aiStep }: { aiStep?: boolean }) {
+function TypingIndicator({ label }: { label?: string }) {
   return (
     <div className="flex items-start gap-3 message-animate">
       <div className="w-8 h-8 rounded-full btn-glow flex items-center justify-center flex-shrink-0 text-white text-xs font-black">
@@ -52,8 +52,8 @@ function TypingIndicator({ aiStep }: { aiStep?: boolean }) {
           <span className="w-2 h-2 bg-white/40 rounded-full typing-dot" />
           <span className="w-2 h-2 bg-white/40 rounded-full typing-dot" />
         </div>
-        {aiStep && (
-          <span className="text-xs text-white/30">Analyzing with AI — may take a few seconds…</span>
+        {label && (
+          <span className="text-xs text-white/30">Analyzing your {label.toLowerCase()}…</span>
         )}
       </div>
     </div>
@@ -749,7 +749,7 @@ export default function LinkedInOptimizer() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto chat-scroll px-3 md:px-6 py-4 space-y-4">
           {messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)}
-          {isLoading && <TypingIndicator aiStep={OPTIMIZATION_STEPS[currentStepIndex]?.aiAnalysis} />}
+          {isLoading && <TypingIndicator label={OPTIMIZATION_STEPS[currentStepIndex]?.aiAnalysis ? OPTIMIZATION_STEPS[currentStepIndex]?.label : undefined} />}
           {showPaywall && !hasPaid && (
             <PaywallCard
               profileData={profileData}
@@ -848,26 +848,36 @@ export default function LinkedInOptimizer() {
                 )}
               </div>
             ) : (
-              <div className="flex gap-3 items-end">
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={currentStep.placeholder}
-                  rows={currentStep.inputType === "textarea" ? 3 : 1}
-                  className="flex-1 resize-none rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:ring-1 focus:ring-brand-teal/40"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                  disabled={isLoading}
-                />
-                <button
-                  onClick={() => handleSend()}
-                  disabled={isLoading || !input.trim()}
-                  className="w-10 h-10 btn-glow rounded-xl flex items-center justify-center text-white flex-shrink-0 disabled:opacity-30"
-                >
-                  <svg className="w-4 h-4 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                  </svg>
-                </button>
+              <div className="space-y-1.5">
+                <div className="flex gap-3 items-end">
+                  <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={currentStep.placeholder}
+                    rows={currentStep.inputType === "textarea" ? 3 : 1}
+                    className="flex-1 resize-none rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:ring-1 focus:ring-brand-teal/40"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    disabled={isLoading}
+                  />
+                  <button
+                    onClick={() => handleSend()}
+                    disabled={isLoading || !input.trim()}
+                    className="w-10 h-10 btn-glow rounded-xl flex items-center justify-center text-white flex-shrink-0 disabled:opacity-30"
+                  >
+                    <svg className="w-4 h-4 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[10px] text-white/20">Enter to send · Shift+Enter for new line</span>
+                  {currentStep.inputType === "textarea" && (
+                    <span className={`text-[10px] font-semibold ${input.length < 40 && input.length > 0 ? "text-yellow-400/70" : "text-white/20"}`}>
+                      {input.length < 40 && input.length > 0 ? "Add more detail for better analysis" : `${input.length} chars`}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </div>

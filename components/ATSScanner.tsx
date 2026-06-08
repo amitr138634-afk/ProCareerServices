@@ -492,6 +492,7 @@ export default function ATSScanner() {
             </div>
             <textarea value={jobDescription} onChange={(e) => { setJobDescription(e.target.value); setSelectedTemplate(""); }}
               placeholder="Paste the full job description here, or pick a template above…" rows={8}
+              maxLength={3000}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white/80 text-xs resize-none focus:outline-none focus:border-brand-blue/50 placeholder-white/20" />
             <div className="flex justify-between items-center mt-1.5 px-1">
               <span className="text-white/20 text-[10px]">More text = better analysis</span>
@@ -520,6 +521,19 @@ export default function ATSScanner() {
 
         {result && (
           <div className="space-y-5">
+            {file && (
+              <div className="flex items-center justify-between px-1">
+                <p className="text-white/30 text-xs">Results for <span className="text-white/50 font-semibold">{fileName}</span></p>
+                <button
+                  onClick={() => handleScan()}
+                  disabled={isScanning}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-white/40 hover:text-white hover:border-white/25 hover:bg-white/5 transition-all disabled:opacity-30"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  Re-scan
+                </button>
+              </div>
+            )}
             <div className="glass-dark rounded-2xl p-6">
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="flex-shrink-0 relative">
@@ -539,12 +553,16 @@ export default function ATSScanner() {
                     {result.industryDetected && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-purple/10 border border-brand-purple/25 text-brand-purple font-bold">{result.industryDetected}</span>
                     )}
-                    {hasPaid && (
+                    {hasPaid ? (
                       <button onClick={downloadReport}
                         className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-brand-teal/30 bg-brand-teal/10 text-brand-teal hover:bg-brand-teal/20 transition-all">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                         Download Report
                       </button>
+                    ) : (
+                      <span className="ml-auto text-[10px] text-white/20 border border-white/8 px-2 py-1 rounded-lg">
+                        🔒 PDF Report — Premium
+                      </span>
                     )}
                   </div>
                   <p className="text-white/50 text-sm mb-4">{result.verdict}</p>
@@ -578,9 +596,15 @@ export default function ATSScanner() {
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
                   {result.keywordsMissing.map((k, i) => <span key={i} className="px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold">{k}</span>)}
-                  {!result.isPremium && <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-white/20 text-xs font-semibold blur-[3px] select-none">React Hooks</span>}
+                  {!result.isPremium && (
+                    <>
+                      <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-white/20 text-xs font-semibold blur-[3px] select-none">Relevant Skill</span>
+                      <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-white/20 text-xs font-semibold blur-[3px] select-none">Key Term</span>
+                      <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-white/20 text-xs font-semibold blur-[3px] select-none">Tool Name</span>
+                    </>
+                  )}
                 </div>
-                {!result.isPremium && <p className="text-white/30 text-[11px] mt-2">🔒 Full keyword list in premium report</p>}
+                {!result.isPremium && <p className="text-white/30 text-[11px] mt-2">🔒 Full keyword list unlocked in premium report</p>}
               </div>
             </div>
 
