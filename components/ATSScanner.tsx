@@ -157,6 +157,9 @@ export default function ATSScanner() {
     const ok = f.name.endsWith(".pdf") || f.name.endsWith(".docx") || f.name.endsWith(".doc");
     if (!ok) { setError("Please upload a PDF or DOCX file."); return; }
     setFile(f); setFileName(f.name); setError("");
+    // Clear old result so a fresh scan is required for the new file
+    setResult(null);
+    try { localStorage.removeItem(ATS_SESSION_KEY); } catch { /* ignore */ }
   };
 
   const onDrop = useCallback((e: React.DragEvent) => {
