@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { saveStory, getAllStories, deleteStory } from "@/lib/db";
+import { saveStory, getAllStories, deleteStory, updateStory } from "@/lib/db";
 
 function checkAdmin(req: NextRequest) {
   const pw = process.env.ADMIN_PASSWORD;
@@ -43,6 +43,14 @@ export async function POST(req: NextRequest) {
 
   const record = await saveStory({ name, role, result, story, imageUrl });
   return NextResponse.json({ success: true, story: record });
+}
+
+export async function PATCH(req: NextRequest) {
+  if (!checkAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id, ...updates } = await req.json();
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  await updateStory(id, updates);
+  return NextResponse.json({ success: true });
 }
 
 export async function DELETE(req: NextRequest) {

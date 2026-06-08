@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { saveFeedback, getApprovedFeedback, getAllFeedbackAdmin, approveFeedback } from "@/lib/db";
+import { saveFeedback, getApprovedFeedback, getAllFeedbackAdmin, approveFeedback, deleteFeedback } from "@/lib/db";
 import { sendEmail, tableRow, emailTemplate } from "@/lib/email";
 
 function checkAdmin(req: NextRequest) {
@@ -56,5 +56,13 @@ export async function PATCH(req: NextRequest) {
   const { id, approved } = await req.json();
   if (!id || approved === undefined) return NextResponse.json({ error: "id and approved required" }, { status: 400 });
   await approveFeedback(id, Boolean(approved));
+  return NextResponse.json({ success: true });
+}
+
+export async function DELETE(req: NextRequest) {
+  if (!checkAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await req.json();
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  await deleteFeedback(id);
   return NextResponse.json({ success: true });
 }

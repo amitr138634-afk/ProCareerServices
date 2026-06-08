@@ -52,8 +52,10 @@ export default function AdminPage() {
   const [storyForm, setStoryForm] = useState({ name: "", role: "", result: "", story: "", imageUrl: "" });
   const [storyFile, setStoryFile] = useState<File | null>(null);
   const [storySubmitting, setStorySubmitting] = useState(false);
+  const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
   const [blogForm, setBlogForm] = useState({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", author: "ProCareerLaunchpad Team", published: false });
   const [blogSubmitting, setBlogSubmitting] = useState(false);
+  const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [showAddOrder, setShowAddOrder] = useState(false);
   const [orderForm, setOrderForm] = useState<Omit<Order, "id" | "createdAt" | "updatedAt">>({
@@ -435,6 +437,16 @@ export default function AdminPage() {
     await fetchData(savedPw, savedEmail);
   };
 
+  const deleteFeedbackItem = async (id: string) => {
+    if (!confirm("Delete this feedback permanently?")) return;
+    setFeedback((prev) => prev.filter((f) => f.id !== id));
+    await fetch("/api/feedback", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", ...adminHeaders(savedPw, savedEmail) },
+      body: JSON.stringify({ id }),
+    });
+  };
+
   const deleteStory = async (id: string) => {
     await fetch("/api/stories", {
       method: "DELETE",
@@ -448,10 +460,19 @@ export default function AdminPage() {
     e.preventDefault();
     if (!storyForm.name || !storyForm.story) return;
     setStorySubmitting(true);
-    const body = new FormData();
-    Object.entries(storyForm).forEach(([k, v]) => body.append(k, v));
-    if (storyFile) body.append("image", storyFile);
-    await fetch("/api/stories", { method: "POST", headers: adminHeaders(savedPw, savedEmail), body });
+    if (editingStoryId) {
+      await fetch("/api/stories", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...adminHeaders(savedPw, savedEmail) },
+        body: JSON.stringify({ id: editingStoryId, ...storyForm }),
+      });
+      setEditingStoryId(null);
+    } else {
+      const body = new FormData();
+      Object.entries(storyForm).forEach(([k, v]) => body.append(k, v));
+      if (storyFile) body.append("image", storyFile);
+      await fetch("/api/stories", { method: "POST", headers: adminHeaders(savedPw, savedEmail), body });
+    }
     setStoryForm({ name: "", role: "", result: "", story: "", imageUrl: "" });
     setStoryFile(null);
     setStorySubmitting(false);
@@ -462,11 +483,21 @@ export default function AdminPage() {
     e.preventDefault();
     if (!blogForm.title || !blogForm.content) return;
     setBlogSubmitting(true);
-    await fetch("/api/blogs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...adminHeaders(savedPw, savedEmail) },
-      body: JSON.stringify({ ...blogForm, tags: blogForm.tags.split(",").map((t) => t.trim()).filter(Boolean) }),
-    });
+    const tags = blogForm.tags.split(",").map((t) => t.trim()).filter(Boolean);
+    if (editingBlogId) {
+      await fetch("/api/blogs", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...adminHeaders(savedPw, savedEmail) },
+        body: JSON.stringify({ id: editingBlogId, ...blogForm, tags }),
+      });
+      setEditingBlogId(null);
+    } else {
+      await fetch("/api/blogs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...adminHeaders(savedPw, savedEmail) },
+        body: JSON.stringify({ ...blogForm, tags }),
+      });
+    }
     setBlogForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", author: "ProCareerLaunchpad Team", published: false });
     setBlogSubmitting(false);
     await fetchData(savedPw, savedEmail);
@@ -1766,7 +1797,13 @@ export default function AdminPage() {
 
             {/* Add story form */}
             <form onSubmit={addStory} className="glass rounded-2xl p-6 border border-white/8 space-y-4">
-              <p className="text-white/60 text-sm font-bold mb-2">Add New Story</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-white/60 text-sm font-bold">{editingStoryId ? "Edit Story" : "Add New Story"}</p>
+                {editingStoryId && (
+                  <button type="button" onClick={() => { setEditingStoryId(null); setStoryForm({ name: "", role: "", result: "", story: "", imageUrl: "" }); }}
+                    className="text-white/30 hover:text-white/60 text-xs transition-colors">✕ Cancel edit</button>
+                )}
+              </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-white/50 text-xs mb-1 block">Name *</label>
@@ -1809,7 +1846,7 @@ export default function AdminPage() {
               </div>
               <button type="submit" disabled={storySubmitting}
                 className="btn-glow text-white font-bold px-6 py-2.5 rounded-xl text-sm disabled:opacity-50">
-                {storySubmitting ? "Adding…" : "Add Story →"}
+                {storySubmitting ? "Saving…" : editingStoryId ? "Save Changes →" : "Add Story →"}
               </button>
             </form>
 
@@ -1835,6 +1872,11 @@ export default function AdminPage() {
                       {s.result && <span className="text-brand-teal text-xs">✓ {s.result}</span>}
                       <p className="text-white/55 text-xs mt-1 leading-relaxed line-clamp-2">&ldquo;{s.story}&rdquo;</p>
                     </div>
+                    <button
+                      onClick={() => { setEditingStoryId(s.id); setStoryForm({ name: s.name, role: s.role, result: s.result, story: s.story, imageUrl: s.imageUrl }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue border border-brand-blue/25 text-xs font-bold hover:bg-brand-blue/20 transition-colors">
+                      Edit
+                    </button>
                     <button onClick={() => deleteStory(s.id)}
                       className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-bold hover:bg-red-500/20 transition-colors">
                       Delete
@@ -1884,15 +1926,22 @@ export default function AdminPage() {
                     </div>
                   </div>
                   <p className="text-white/60 text-xs leading-relaxed mb-3 bg-white/3 rounded-xl p-3">&ldquo;{fb.message}&rdquo;</p>
-                  <button
-                    onClick={() => toggleFeedbackApproval(fb.id, !fb.approved)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                      fb.approved
-                        ? "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
-                        : "bg-brand-teal/10 text-brand-teal border border-brand-teal/25 hover:bg-brand-teal/20"
-                    }`}>
-                    {fb.approved ? "Unpublish" : "Approve & Publish"}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => toggleFeedbackApproval(fb.id, !fb.approved)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                        fb.approved
+                          ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/25 hover:bg-yellow-500/20"
+                          : "bg-brand-teal/10 text-brand-teal border border-brand-teal/25 hover:bg-brand-teal/20"
+                      }`}>
+                      {fb.approved ? "Unpublish" : "Approve & Publish"}
+                    </button>
+                    <button
+                      onClick={() => deleteFeedbackItem(fb.id)}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-bold hover:bg-red-500/20 transition-colors">
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))
             )}
@@ -1908,7 +1957,13 @@ export default function AdminPage() {
 
             {/* Write new blog */}
             <form onSubmit={addBlog} className="glass rounded-2xl p-6 border border-white/8 space-y-4">
-              <p className="text-white/60 text-sm font-bold mb-2">Write New Blog Post</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-white/60 text-sm font-bold">{editingBlogId ? "Edit Blog Post" : "Write New Blog Post"}</p>
+                {editingBlogId && (
+                  <button type="button" onClick={() => { setEditingBlogId(null); setBlogForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", author: "ProCareerLaunchpad Team", published: false }); }}
+                    className="text-white/30 hover:text-white/60 text-xs transition-colors">✕ Cancel edit</button>
+                )}
+              </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
@@ -1967,7 +2022,7 @@ export default function AdminPage() {
                 </label>
                 <button type="submit" disabled={blogSubmitting}
                   className="btn-glow text-white font-bold px-6 py-2.5 rounded-xl text-sm disabled:opacity-50">
-                  {blogSubmitting ? "Publishing…" : blogForm.published ? "Publish Post →" : "Save as Draft →"}
+                  {blogSubmitting ? "Saving…" : editingBlogId ? "Save Changes →" : blogForm.published ? "Publish Post →" : "Save as Draft →"}
                 </button>
               </div>
             </form>
@@ -1993,10 +2048,15 @@ export default function AdminPage() {
                         <p className="text-white/35 text-xs font-mono">/blogs/{b.slug}</p>
                         {b.excerpt && <p className="text-white/45 text-xs mt-1 line-clamp-1">{b.excerpt}</p>}
                       </div>
-                      <div className="flex gap-2 flex-shrink-0">
+                      <div className="flex gap-2 flex-shrink-0 flex-wrap">
                         {b.published
                           ? <a href={`/blogs/${b.slug}`} target="_blank" className="px-3 py-1.5 rounded-lg bg-brand-teal/10 text-brand-teal border border-brand-teal/25 text-xs font-bold hover:bg-brand-teal/20 transition-colors">View</a>
                           : null}
+                        <button
+                          onClick={() => { setEditingBlogId(b.id); setBlogForm({ title: b.title, slug: b.slug, excerpt: b.excerpt, content: b.content, coverImage: b.coverImage, tags: b.tags.join(", "), author: b.author, published: b.published }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                          className="px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue border border-brand-blue/25 text-xs font-bold hover:bg-brand-blue/20 transition-colors">
+                          Edit
+                        </button>
                         <button onClick={() => toggleBlogPublish(b.id, !b.published)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${b.published ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/25 hover:bg-yellow-500/20" : "bg-brand-teal/10 text-brand-teal border border-brand-teal/25 hover:bg-brand-teal/20"}`}>
                           {b.published ? "Unpublish" : "Publish"}

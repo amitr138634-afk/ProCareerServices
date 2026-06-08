@@ -83,9 +83,11 @@ interface DataStore {
   getApprovedFeedback(): Promise<FeedbackRecord[]>;
   getAllFeedbackAdmin(): Promise<FeedbackRecord[]>;
   approveFeedback(id: string, approved: boolean): Promise<void>;
+  deleteFeedback(id: string): Promise<void>;
   saveStory(r: Omit<StoryRecord, "id" | "createdAt">): Promise<StoryRecord>;
   getAllStories(): Promise<StoryRecord[]>;
   deleteStory(id: string): Promise<void>;
+  updateStory(id: string, updates: Partial<Omit<StoryRecord, "id" | "createdAt">>): Promise<void>;
   saveBlog(r: Omit<BlogRecord, "id" | "createdAt" | "updatedAt">): Promise<BlogRecord>;
   updateBlog(id: string, updates: Partial<Omit<BlogRecord, "id" | "createdAt">>): Promise<void>;
   getPublishedBlogs(): Promise<BlogRecord[]>;
@@ -390,6 +392,11 @@ class MongoStore implements DataStore {
     await db.collection("feedback").updateOne({ id }, { $set: { approved } });
   }
 
+  async deleteFeedback(id: string): Promise<void> {
+    const db = await this.db();
+    await db.collection("feedback").deleteOne({ id });
+  }
+
   async saveStory(r: Omit<StoryRecord, "id" | "createdAt">): Promise<StoryRecord> {
     const db = await this.db();
     const record: StoryRecord = { ...r, id: newId("st"), createdAt: new Date().toISOString() };
@@ -405,6 +412,11 @@ class MongoStore implements DataStore {
   async deleteStory(id: string): Promise<void> {
     const db = await this.db();
     await db.collection("stories").deleteOne({ id });
+  }
+
+  async updateStory(id: string, updates: Partial<Omit<StoryRecord, "id" | "createdAt">>): Promise<void> {
+    const db = await this.db();
+    await db.collection("stories").updateOne({ id }, { $set: updates });
   }
 
   async saveBlog(r: Omit<BlogRecord, "id" | "createdAt" | "updatedAt">): Promise<BlogRecord> {
@@ -565,6 +577,11 @@ class MemoryStore implements DataStore {
     if (f) { f.approved = approved; writeData("feedback.json", this.feedback); }
   }
 
+  async deleteFeedback(id: string): Promise<void> {
+    this.feedback = this.feedback.filter((f) => f.id !== id);
+    writeData("feedback.json", this.feedback);
+  }
+
   async saveStory(r: Omit<StoryRecord, "id" | "createdAt">): Promise<StoryRecord> {
     const record: StoryRecord = { ...r, id: newId("st"), createdAt: new Date().toISOString() };
     this.stories.unshift(record);
@@ -577,6 +594,11 @@ class MemoryStore implements DataStore {
   async deleteStory(id: string): Promise<void> {
     this.stories = this.stories.filter((s) => s.id !== id);
     writeData("stories.json", this.stories);
+  }
+
+  async updateStory(id: string, updates: Partial<Omit<StoryRecord, "id" | "createdAt">>): Promise<void> {
+    const s = this.stories.find((x) => x.id === id);
+    if (s) { Object.assign(s, updates); writeData("stories.json", this.stories); }
   }
 
   async saveBlog(r: Omit<BlogRecord, "id" | "createdAt" | "updatedAt">): Promise<BlogRecord> {
@@ -657,9 +679,11 @@ export const saveFeedback = (r: Omit<FeedbackRecord, "id" | "createdAt" | "appro
 export const getApprovedFeedback = () => store.getApprovedFeedback();
 export const getAllFeedbackAdmin = () => store.getAllFeedbackAdmin();
 export const approveFeedback = (id: string, approved: boolean) => store.approveFeedback(id, approved);
+export const deleteFeedback = (id: string) => store.deleteFeedback(id);
 export const saveStory = (r: Omit<StoryRecord, "id" | "createdAt">) => store.saveStory(r);
 export const getAllStories = () => store.getAllStories();
 export const deleteStory = (id: string) => store.deleteStory(id);
+export const updateStory = (id: string, updates: Partial<Omit<StoryRecord, "id" | "createdAt">>) => store.updateStory(id, updates);
 export const saveBlog = (r: Omit<BlogRecord, "id" | "createdAt" | "updatedAt">) => store.saveBlog(r);
 export const updateBlog = (id: string, updates: Partial<Omit<BlogRecord, "id" | "createdAt">>) => store.updateBlog(id, updates);
 export const getPublishedBlogs = () => store.getPublishedBlogs();
