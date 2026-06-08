@@ -41,7 +41,7 @@ type ProviderFn = (prompt: string) => Promise<string>;
 
 async function callOpenAICompat(client: OpenAI, model: string, prompt: string) {
   const res = await client.chat.completions.create({
-    model, messages: [{ role: "user", content: prompt }], max_tokens: 2000, temperature: 0.3,
+    model, messages: [{ role: "user", content: prompt }], max_tokens: 3500, temperature: 0.3,
   });
   return res.choices[0]?.message?.content || "";
 }
@@ -57,7 +57,7 @@ const providers: [string, ProviderFn][] = [
   ["OpenRouter", (p) => { if (!openrouterClient) throw new Error("no key"); return callOpenAICompat(openrouterClient, OPENROUTER_MODEL, p); }],
   ["Claude", async (p) => {
     if (!anthropicClient) throw new Error("no key");
-    const r = await anthropicClient.messages.create({ model: CLAUDE_MODEL, max_tokens: 2000, messages: [{ role: "user", content: p }] });
+    const r = await anthropicClient.messages.create({ model: CLAUDE_MODEL, max_tokens: 3500, messages: [{ role: "user", content: p }] });
     const b = r.content[0]; return b.type === "text" ? b.text : "";
   }],
   ["OpenAI", (p) => { if (!openaiClient) throw new Error("no key"); return callOpenAICompat(openaiClient, OPENAI_MODEL, p); }],
@@ -107,13 +107,19 @@ async function extractText(file: File): Promise<string> {
 
 // ── ATS prompt ─────────────────────────────────────────────────────────────
 function buildATSPrompt(resumeText: string, jobDescription: string, isPremium: boolean): string {
-  const depth = isPremium
-    ? "Provide FULL detailed analysis with complete recommendations for every section."
-    : "Provide BASIC analysis. Give only 2 specific recommendations and 3 missing keywords. For the rest, say they are available in the premium report.";
+  return `You are the world's most advanced ATS resume analyzer, trained on rejection and success patterns from Taleo, Workday, Greenhouse, iCIMS, Lever, and SAP SuccessFactors. You know exactly why resumes fail screening.
 
-  return `You are an expert ATS (Applicant Tracking System) analyst and career coach.
-
-Analyze this resume against the job description and return a JSON response ONLY (no markdown, no explanation outside JSON).
+CRITICAL ATS FACTS YOU APPLY:
+• 75% of resumes are auto-rejected before a human reads them
+• Multi-column/table layouts scramble parse order — ATS reads columns as one jumbled line
+• Special bullet symbols (★ ● ■ ▪ → ✓) convert to garbage text or get stripped
+• Headers and footers are INVISIBLE to all major ATS — never place contact info there
+• Fancy fonts render as garbled symbols; only Arial, Calibri, Times, Georgia are safe
+• Non-text PDFs (scanned/image) = 0 parseable content; DOCX is safest format
+• ATS keyword matching: exact match + intelligent synonyms ("led team" = "team leadership")
+• Non-standard section headers confuse ATS parsers ("Career Journey" ≠ "Work Experience")
+• Achievements with metrics (%, $, numbers) score 3–5× higher in AI resume screeners
+• Keyword density matters: each critical skill should appear 2–3× across sections
 
 RESUME:
 ${resumeText.slice(0, 8000)}
@@ -121,33 +127,76 @@ ${resumeText.slice(0, 8000)}
 JOB DESCRIPTION:
 ${jobDescription.slice(0, 3000)}
 
-${depth}
+SCORING — be brutally precise, not generous:
+• keywordMatch (0–30): Count critical JD skills found in resume. ~1.5 pts each. Synonyms count.
+• formatting (0–20): Deduct: multi-column (-8), tables (-6), special symbols (-3), non-standard headers (-2), likely image-heavy (-5). Clean plain-text = 20.
+• sections (0–20): Presence AND quality of all 5 standard sections. Thin/missing sections = heavy deductions.
+• achievements (0–15): % of experience bullets with hard numbers/% /$: 80%+=15, 60%+=11, 40%+=8, 20%+=5, <20%=2
+• readability (0–15): Strong varied action verbs, no passive voice, concise sentences, professional tone.
+Calibrate to reality: a resume with zero metrics MUST score 2–5 on achievements. Do NOT cluster scores 70–85.
 
-Return this exact JSON structure:
+${isPremium
+  ? "PREMIUM MODE: Deliver complete analysis — all missing keywords, 12–15 tagged recommendations, full formatting audit, bullet strength count."
+  : "FREE MODE: 2 specific recommendations only, top 3 missing keywords only. Everything else mark as premium-locked."}
+
+Return ONLY valid JSON — no markdown fences, no text outside the JSON object:
 {
-  "atsScore": <number 0-100>,
+  "atsScore": <integer 0-100>,
+  "industryDetected": "<e.g. Software Engineering | Product Management | Digital Marketing | Finance | HR | Sales>",
   "scoreBreakdown": {
-    "keywordMatch": <number 0-30>,
-    "formatting": <number 0-20>,
-    "sections": <number 0-20>,
-    "achievements": <number 0-15>,
-    "readability": <number 0-15>
+    "keywordMatch": <0-30>,
+    "formatting": <0-20>,
+    "sections": <0-20>,
+    "achievements": <0-15>,
+    "readability": <0-15>
   },
-  "keywordsFound": [<list of matching keywords from JD found in resume, max 15>],
-  "keywordsMissing": ${isPremium ? "[<ALL missing important keywords from JD>]" : "[<top 3 missing keywords only>]"},
+  "keywordsFound": [<keywords from JD present in resume — exact words, max 20>],
+  "keywordsMissing": ${isPremium
+    ? "[<ALL important keywords from JD that are absent, ordered by how many times they appear in the JD>]"
+    : "[<top 3 most critical missing keywords only>]"},
   "sectionAnalysis": {
-    "contactInfo": { "present": <bool>, "score": <0-100>, "note": "<short note>" },
-    "summary": { "present": <bool>, "score": <0-100>, "note": "<short note>" },
-    "experience": { "present": <bool>, "score": <0-100>, "note": "<short note>" },
-    "education": { "present": <bool>, "score": <0-100>, "note": "<short note>" },
-    "skills": { "present": <bool>, "score": <0-100>, "note": "<short note>" }
+    "contactInfo": { "present": <bool>, "score": <0-100>, "note": "<specific: what's present or missing — email, phone, LinkedIn URL, location>" },
+    "summary": { "present": <bool>, "score": <0-100>, "note": "<specific: length, keyword density, hook quality>" },
+    "experience": { "present": <bool>, "score": <0-100>, "note": "<specific: metrics present, action verb quality, relevance to JD>" },
+    "education": { "present": <bool>, "score": <0-100>, "note": "<specific: degree, institution, year, relevance>" },
+    "skills": { "present": <bool>, "score": <0-100>, "note": "<specific: coverage of JD's required skills vs listed skills>" }
   },
-  "recommendations": ${isPremium
-    ? `[<10-15 specific, actionable recommendations to improve ATS score. Each should be a specific action like "Add 'Agile' keyword to your Skills section" or "Quantify your sales achievement in line 2 of Job 1 with a percentage">]`
-    : `[<exactly 2 specific recommendations. Be direct about what to fix.>, "🔒 Unlock 10+ more recommendations with Premium"]`
+  "formattingFlags": [${isPremium
+    ? `
+    { "issue": "<exact formatting problem detected or likely present>", "severity": "critical", "fix": "<concrete fix instruction>" },
+    // Add as many as apply. severity = critical (breaks ATS parsing) | warning (hurts ranking) | info (best practice tip)
+    // If resume looks clean, return: { "issue": "No critical formatting issues detected", "severity": "info", "fix": "Resume appears ATS-safe. Ensure file is saved as .docx or text-selectable PDF." }`
+    : "/* empty — available in premium */"}
+  ],
+  "bulletStrength": {
+    "total": <estimated count of bullet points in experience section>,
+    "withMetrics": <estimated count of bullets containing numbers, %, $, or time ranges>,
+    "percentage": <rounded integer percentage>
   },
-  "topStrengths": [<3 things the resume does well for this JD>],
-  "verdict": "<2 sentence overall verdict on ATS compatibility>"
+  "impactScore": <integer 0-100: how impressive and role-relevant are the achievements — 90+ = outstanding, 70+ = good, 50+ = average, <50 = weak>,
+  "recommendations": [${isPremium
+    ? `
+    // 12-15 items. EACH must:
+    // 1. Start with [HIGH], [MEDIUM], or [LOW] impact tag
+    // 2. Name the EXACT section and what to change
+    // 3. Give the actual fix or example text
+    // E.g.: "[HIGH] Add 'Agile/Scrum' to your Skills section — it appears 5× in the JD and is completely absent. Add: 'Agile · Scrum · Sprint Planning'"
+    // E.g.: "[HIGH] Experience bullet 'Worked on backend systems' → Rewrite as 'Architected and deployed RESTful microservices handling [X]K req/day, reducing latency by [X]%'"
+    // E.g.: "[MEDIUM] Your summary has 45 words — expand to 80-100 words adding keywords: [list 3 missing keywords from JD]"
+    "<recommendation 1>",
+    "<recommendation 2>"
+    // ... up to 15`
+    : `
+    "<ultra-specific recommendation 1 — name the exact section and fix>",
+    "<ultra-specific recommendation 2 — name the exact section and fix>",
+    "🔒 Unlock 13+ more tagged recommendations, formatting audit & complete keyword gap analysis with Premium"`}
+  ],
+  "topStrengths": [
+    "<strength 1 — specific to THIS resume for THIS role, not generic>",
+    "<strength 2>",
+    "<strength 3>"
+  ],
+  "verdict": "<Sentence 1: honest bottom-line assessment with actual score context. Sentence 2: the single most impactful change they should make TODAY.>"
 }`;
 }
 

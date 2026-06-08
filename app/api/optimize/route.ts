@@ -52,7 +52,7 @@ async function tryGroq(prompt: string): Promise<string> {
   const res = await groqClient.chat.completions.create({
     model: GROQ_MODEL,
     messages: [{ role: "user", content: prompt }],
-    max_tokens: 900,
+    max_tokens: 1800,
     temperature: 0.7,
   });
   return res.choices[0]?.message?.content || "";
@@ -63,7 +63,7 @@ async function tryGroqDeepSeek(prompt: string): Promise<string> {
   const res = await groqClient.chat.completions.create({
     model: GROQ_FALLBACK_MODEL,
     messages: [{ role: "user", content: prompt }],
-    max_tokens: 900,
+    max_tokens: 1800,
     temperature: 0.7,
   });
   return res.choices[0]?.message?.content || "";
@@ -81,7 +81,7 @@ async function tryOpenRouter(prompt: string): Promise<string> {
   const res = await openrouterClient.chat.completions.create({
     model: OPENROUTER_MODEL,
     messages: [{ role: "user", content: prompt }],
-    max_tokens: 900,
+    max_tokens: 1800,
     temperature: 0.7,
   });
   return res.choices[0]?.message?.content || "";
@@ -91,7 +91,7 @@ async function tryClaude(prompt: string): Promise<string> {
   if (!anthropicClient) throw new Error("ANTHROPIC_API_KEY not set");
   const res = await anthropicClient.messages.create({
     model: CLAUDE_MODEL,
-    max_tokens: 900,
+    max_tokens: 1800,
     messages: [{ role: "user", content: prompt }],
   });
   const block = res.content[0];
@@ -103,7 +103,7 @@ async function tryOpenAI(prompt: string): Promise<string> {
   const res = await openaiClient.chat.completions.create({
     model: OPENAI_MODEL,
     messages: [{ role: "user", content: prompt }],
-    max_tokens: 900,
+    max_tokens: 1800,
     temperature: 0.7,
   });
   return res.choices[0]?.message?.content || "";
@@ -174,157 +174,309 @@ function buildPrompt(
   const target = profileData["target-position"] || "their target role";
   const competencies = profileData["competencies"] || "their key skills";
 
-  const systemBase = `You are an expert LinkedIn profile optimizer and career coach.
-You help professionals optimize their LinkedIn profiles to attract recruiters and land better jobs.
+  const systemBase = `You are the world's best LinkedIn profile optimizer, trained on thousands of successful profiles that attracted top recruiters. You know LinkedIn's 2025 algorithm inside-out.
 Target role: ${target}
 Key competencies: ${competencies}
-Be concise, actionable, and specific. Use bullet points where helpful.`;
+
+LINKEDIN ALGORITHM FACTS YOU APPLY:
+• Recruiters use Boolean search: "Java AND (Spring OR Microservices) AND (Pune OR Bangalore)"
+• Keyword weight: Headline (3×) > Skills section (2×) > About (1.5×) > Experience (1×)
+• First 40 chars of headline show in search results on mobile — make them count
+• Profiles with 500+ connections rank higher in recruiter search results
+• LinkedIn SSI (Social Selling Index) above 70 gets profiles shown to 3× more recruiters
+• About sections under 200 words look incomplete to LinkedIn's algorithm
+• Experience bullets with numbers get 60% more profile views on average
+• 5+ endorsements per skill = "proven" badge in recruiter filters
+Be brutally specific — give COMPLETE rewrites they can copy-paste immediately.`;
 
   const prompts: Record<string, string> = {
     headline: `${systemBase}
 
-The user's current LinkedIn headline: "${userInput}"
+Current LinkedIn headline: "${userInput}"
 
-Provide:
-1. A brief analysis of what's working and what's missing (2 sentences max)
-2. Three improved headline options (max 220 chars each, keyword-rich, specific)
-3. One clear action item in the format: "TODO: [action]"
+Provide a COMPLETE optimization — not just advice, but copy-paste ready output:
 
-Keep the tone professional yet conversational.`,
+**DIAGNOSIS** (2 sentences max): What's hurting this headline in recruiter search? Be specific about which keywords are missing or where it fails the 40-char mobile preview test.
+
+**THREE COMPLETE HEADLINE REWRITES:**
+Option A — SEARCH-OPTIMIZED (pack exact recruiter search terms, hits all Boolean filters):
+[Write the full headline — max 220 chars]
+
+Option B — ACHIEVEMENT-LED (opens with a metric or result that hooks attention):
+[Write the full headline — max 220 chars]
+
+Option C — NICHE-AUTHORITY (positions them as the go-to expert in a specific area):
+[Write the full headline — max 220 chars]
+
+**PICK THIS ONE**: Tell them which option to use and exactly why it will rank higher for ${target} searches.
+
+**ALGORITHM TIP**: One specific LinkedIn insight about headline optimization they probably don't know.
+
+TODO: Replace your current headline with Option [X] within the next 10 minutes
+TODO: Check recruiter search rank using LinkedIn's "Open to Work" or Sales Navigator after 48 hours`,
 
     achievements: `${systemBase}
 
-The user's professional achievements: "${userInput}"
+Professional achievements: "${userInput}"
 
-Provide:
-1. Pick the top 3 most impactful for LinkedIn
-2. Suggest how to quantify or strengthen each one (use [X%] or [number] as placeholder if needed)
-3. Recommend where on LinkedIn to feature them (Featured section, About, Experience)
-4. Two action items in the format: "TODO: [action]"`,
+Transform every achievement into LinkedIn gold — complete rewrites ready to copy-paste:
+
+**REWRITTEN ACHIEVEMENTS** (use formula: Strong Verb + What + How + Measurable Result):
+For each achievement the user shared, provide:
+→ Original: [their text]
+→ LinkedIn Version: [rewritten with metrics. If no metric given, use realistic placeholders like [X%], [$X], [X people]]
+→ Placement: [exactly where on LinkedIn: Featured / About / Experience at [Company]]
+
+**TOP 3 PICKS** for ${target} roles and why they're the most powerful.
+
+**ALGORITHM TIP**: LinkedIn's feed algorithm boosts posts with specific numbers — posts with "increased by 40%" get 3× more reach than vague claims.
+
+**FEATURED SECTION BRIEF**: Write a 1-paragraph Featured section intro they can use right now.
+
+TODO: Add the top achievement to your About section opening paragraph
+TODO: Pin a post about your #1 achievement in the Featured section`,
 
     "spelling-grammar": `${systemBase}
 
-Review this LinkedIn text for spelling, grammar, and professional tone:
+Text to review:
 "${userInput}"
 
-Provide:
-1. List of specific errors (if any), or confirm it's error-free
-2. The corrected version
-3. One tone/professionalism suggestion
-4. One action item: "TODO: [action]"`,
+Provide a COMPLETE edit — not just identify errors, fix them:
+
+**ERRORS FOUND**: List every spelling, grammar, and tone issue with the exact location.
+
+**CORRECTED VERSION**: The full text rewritten — clean, professional, and ready to paste.
+
+**TONE UPGRADE**: Rewrite it one more time with stronger professional impact — replace weak phrases ("responsible for", "helped with", "worked on") with power language ("led", "drove", "delivered").
+
+**KEYWORD INJECTION**: Identify 2-3 keywords relevant to ${target} that can be naturally woven in without sounding forced. Show the exact placement.
+
+TODO: Replace current text with the Corrected Version
+TODO: Consider using the Tone Upgrade version if you want to stand out more`,
 
     "resume-match": `${systemBase}
 
-Target job description:
+Job description to match against:
 "${userInput}"
 
-Analyze this job description and provide:
-1. Top 10 keywords/skills mentioned in the JD
-2. Which of these are likely missing from the user's LinkedIn profile (based on their competencies: ${competencies})
-3. Exactly where to add each missing keyword (headline / about / skills / experience)
-4. Three action items: "TODO: [action]"`,
+Perform a FULL keyword gap analysis — complete and actionable:
+
+**TOP 15 KEYWORDS FROM THIS JD** (ranked by frequency and importance):
+List each keyword with: [keyword] — appears X times — [Hard skill/Soft skill/Tool/Domain]
+
+**KEYWORD GAP ANALYSIS** (based on competencies: ${competencies}):
+✓ Already present: [keywords likely in their profile]
+✗ MISSING — CRITICAL: [keywords that appear 3+ times in JD — these are dealbreakers]
+✗ MISSING — IMPORTANT: [keywords that appear 1-2 times]
+
+**WHERE TO ADD EACH MISSING KEYWORD** (specific instructions):
+• [Keyword 1] → Add to: Headline + Skills section + About paragraph 2
+• [Keyword 2] → Add to: Skills section + Experience at [most recent role]
+(Continue for all critical missing keywords)
+
+**PROFILE STRENGTH vs THIS JD**: Score out of 100 and explain.
+
+TODO: Add the top 5 missing keywords to your Skills section today
+TODO: Rewrite your headline to include the #1 missing keyword
+TODO: Update your About section to naturally include 3 more missing keywords`,
 
     "about-summary": `${systemBase}
 
-Current LinkedIn About section:
+Current About section:
 "${userInput}"
 
-Provide:
-1. One-sentence analysis of the current About
-2. A fully rewritten About section (200-280 words) that:
-   - Opens with a compelling hook
-   - Highlights ${competencies}
-   - Uses keywords for ${target}
-   - Ends with a call to action
-3. Two action items: "TODO: [action]"`,
+Provide a COMPLETE rewrite — ready to copy-paste:
+
+**DIAGNOSIS**: What's wrong with the current version? Score it on: Hook strength / Keyword density / CTA presence (each out of 10).
+
+**FULL REWRITE** (220-280 words — LinkedIn's algorithm treats under 200 words as incomplete):
+---
+[Write the complete About section. Structure:
+- Line 1: Powerful hook (NOT "I am a..."). Lead with value, impact, or an intriguing statement.
+- Para 1: Professional identity + core expertise. Include 3-4 keywords for ${target}.
+- Para 2: Top 2-3 achievements with metrics. Use numbers.
+- Para 3: What you bring to ${target} roles. Include ${competencies}.
+- Last line: Clear CTA — "Open to [role] opportunities. Let's connect: [email or just 'DM me']"
+]
+---
+
+**ALGORITHM NOTE**: First 300 characters show before "see more" — make them count. We've front-loaded your best hook.
+
+TODO: Replace your About section with the rewrite above
+TODO: Add 2-3 relevant hashtags at the bottom (#OpenToWork #[Industry] #[Skill])`,
 
     experience: `${systemBase}
 
-Current job description from LinkedIn:
+Current job description:
 "${userInput}"
 
-Rewrite this job description:
-1. Use strong action verbs (Led, Built, Delivered, Increased, etc.)
-2. Add quantified achievements (use [X%] or [number] placeholders where metrics are missing)
-3. Include keywords relevant to ${target}
-4. Format as 4-5 impactful bullet points
-5. Two action items: "TODO: [action]"`,
+Provide a COMPLETE rewrite of this experience entry — ready to paste into LinkedIn:
+
+**DIAGNOSIS**: What's weak? (passive voice / no metrics / missing keywords / wrong format?)
+
+**FULLY REWRITTEN VERSION**:
+Company: [keep as-is]
+Title: [keep as-is, or suggest a stronger title if warranted]
+---
+[Write 5 powerful bullet points using this formula for each:
+• [Strong past-tense verb] + [what you owned/built/led] + [method/tool/technology] + [quantified result]
+Examples: "Architected", "Drove", "Reduced", "Generated", "Automated", "Spearheaded"
+Use [X%] or [X] placeholders if metrics are unknown.]
+---
+
+**KEYWORD INJECTION**: List 3 keywords from ${target} job descriptions that naturally fit this role and show exactly where to add them.
+
+**TITLE OPTIMISATION**: If the job title doesn't match ${target} search terms, suggest an alternate title they can add in parentheses (e.g., "Senior Developer (Full-Stack | React | Node.js)").
+
+TODO: Replace experience description with the rewritten version above
+TODO: Add a "Key Achievement" highlight using LinkedIn's media attachment feature`,
 
     "profile-photo": `${systemBase}
 
-The user described their profile photo as: "${userInput}"
+Profile photo description: "${userInput}"
 
-Analyze this and tell them EXACTLY what needs to be fixed:
-1. What's wrong or missing with their current photo (be direct and specific)
-2. Exact specifications for an ideal LinkedIn photo:
-   - Framing (how much of the face/body should show)
-   - Background (what color/style works best for ${target} roles)
-   - Attire recommendation for their target role (${target})
-   - Lighting tips
-3. Free/cheap tools to get a professional photo (mention AI headshot tools like Aragon, HeadshotPro, or PhotoAI if they can't get a photographer)
-4. One action item: "TODO: [action]"
+Give them an ACTIONABLE photo fix plan — not generic tips:
 
-Be direct about what needs to change, not just generic tips.`,
+**HONEST ASSESSMENT**: What's working and what's not (be direct — vague feedback is useless).
+
+**PHOTO REQUIREMENTS FOR ${target.toUpperCase()} ROLES**:
+• Framing: Face should fill 60-70% of frame. Crop from mid-chest up.
+• Background: [Specific recommendation based on ${target} industry — e.g., clean white/grey for tech, outdoor/natural for creative roles]
+• Attire: [Specific clothing recommendation for ${target} — business casual / formal / smart casual]
+• Expression: Confident, approachable — slight smile, direct eye contact with camera
+• Lighting: Soft natural light from a window at a 45° angle is ideal. Avoid harsh shadows.
+
+**FREE AI HEADSHOT TOOLS** (ranked best to worst):
+1. Aragon.ai (~$29) — most professional results
+2. HeadshotPro.com — good for corporate looks
+3. ProfilePictureMaker.com — free, basic but decent
+
+**DIY IN 10 MINUTES**: Stand near a bright window. Use portrait mode on any modern smartphone. Take 20 shots in slightly different poses. Pick the one where you look most confident.
+
+TODO: Retake your photo using the DIY guide above this week
+TODO: If budget allows, invest in Aragon.ai for an instant professional headshot`,
 
     banner: `${systemBase}
 
-The user's current LinkedIn banner: "${userInput}"
+Current LinkedIn banner: "${userInput}"
 
-Analyze this and give them a COMPLETE banner brief they can hand to a designer or replicate on Canva:
+Provide a COMPLETE Canva-ready banner brief:
 
-1. What's wrong with their current banner (1 sentence, be direct)
-2. Exact content to include on their new banner tailored to ${target}:
-   - Main text (their name + title/tagline)
-   - Specific skill/tool logos to feature (based on competencies: ${competencies})
-   - A one-line value proposition
-3. Design specs:
-   - Size: 1584×396px
-   - Color palette recommendation (based on their industry)
-   - Font style suggestion
-4. Canva steps: Search "LinkedIn Banner" → pick a dark/professional template → customize
-5. One action item: "TODO: [action]"
+**WHAT'S WRONG**: One direct sentence about why the current banner isn't working.
 
-Make it so specific they can open Canva right now and build it.`,
+**YOUR NEW BANNER BRIEF** — Open Canva right now and follow this:
+• Size: 1584 × 396px (LinkedIn Banner template in Canva)
+• Background: [Specific color or style based on ${target} industry]
+• Left side (40% of banner): Your name in large bold font + title: "${target}"
+• Center: Your value statement — "[competency 1] · [competency 2] · [competency 3]" based on ${competencies}
+• Right side (30%): [Industry-specific visual: code editor screenshot / data visualization / etc.]
+• Color palette: [Specific hex colors based on their industry]
+• Font: Bold sans-serif (Montserrat or Poppins in Canva)
+
+**CANVA STEPS**:
+1. canva.com → search "LinkedIn Banner"
+2. Pick a dark/professional template
+3. Replace text with above content
+4. Download as PNG
+5. Upload to LinkedIn → Edit profile → Background photo
+
+TODO: Create your banner on Canva using this brief (takes 15 minutes)
+TODO: Use a consistent color scheme that matches your profile photo background`,
 
     recommendations: `${systemBase}
 
-The user's recommendation situation: "${userInput}"
+Recommendation situation: "${userInput}"
 
-Analyze this and provide:
-1. Assessment: Are they above or below the recommended threshold (5+ recommendations)? What does this signal to recruiters?
-2. Exactly WHO to ask for recommendations (types of people, seniority, relationship)
-3. A word-for-word message template they can copy-paste to request a recommendation:
-   ---
-   Hi [Name], I hope you're doing well! I'm currently exploring ${target} opportunities and I'm working on strengthening my LinkedIn profile. Given that we worked together on [project/context], I'd be so grateful if you could write me a brief LinkedIn recommendation highlighting [specific skill/achievement]. I'm happy to write one for you as well! No pressure at all — let me know if you're comfortable with this.
-   ---
-4. What to tell them to mention (specific skills or achievements to highlight)
-5. Two action items: "TODO: [action]"`,
+Provide a COMPLETE recommendations strategy with copy-paste templates:
+
+**ASSESSMENT**: Are they above/below threshold? (5+ recommendations = recruiter trust signal. LinkedIn shows this number prominently.)
+
+**WHO TO ASK** (priority order for ${target} roles):
+1. [Most valuable person type — e.g., direct manager, client, senior colleague]
+2. [Second most valuable]
+3. [Third most valuable]
+Avoid: peers at same level without context, people who barely knew your work.
+
+**COPY-PASTE REQUEST MESSAGE**:
+---
+Subject: Quick LinkedIn recommendation request?
+
+Hi [Name],
+
+Hope you're doing well! I'm currently exploring ${target} opportunities and strengthening my LinkedIn profile.
+
+Given we worked together on [specific project/context], I was hoping you might write a brief LinkedIn recommendation highlighting my [specific skill/achievement relevant to ${target}].
+
+I'd especially love it if you could mention: [specific thing they witnessed — e.g., "how I reduced the deployment time by X%" or "my ability to handle high-pressure client situations"].
+
+Happy to return the favour with a recommendation for you. No pressure at all!
+
+Thanks so much,
+[Name]
+---
+
+**WHAT TO TELL THEM TO WRITE**: Give them 3 specific talking points they can pass along.
+
+TODO: Send the above message to your top 3 priority contacts this week
+TODO: Offer to write a recommendation for them in return (increases yes rate by 70%)`,
 
     "age-discrimination": `${systemBase}
 
-The user's age/discrimination concern: "${userInput}"
+Age/discrimination concern: "${userInput}"
 
-Analyze their situation and provide concrete, specific fixes:
-1. Assess if this is a real risk based on what they shared
-2. Specific profile changes to make:
-   - What to REMOVE from their profile (graduation years, early job dates, outdated tech)
-   - What to ADD (current skills, recent achievements)
-   - How to reframe experience years in their headline/about
-3. Photo and visual brand tips to appear current and modern
-4. Keywords that signal "current" vs "outdated" for ${target} roles
-5. Two action items: "TODO: [action]"
+Provide a COMPLETE profile modernisation plan — specific sections to edit:
 
-Be direct and specific — tell them exactly which sections to edit.`,
+**RISK ASSESSMENT**: Based on what they shared, is this a real concern? What's the estimated impact on their search ranking?
+
+**WHAT TO REMOVE** (sections/details that reveal age):
+• Graduation years before 2000? → Remove the year from Education
+• Experience older than 15 years? → Either remove old roles or list them as "[Role] at [Company]" with no dates
+• Outdated tech (Cobol, Visual Basic 6, IE6 testing)? → Remove or replace with modern equivalents
+• Old-format photo (scanned, formal portrait from 2005)? → Retake immediately
+
+**WHAT TO ADD** (signals you're current):
+• Recent certifications: AWS, Google Cloud, Coursera, LinkedIn Learning badges
+• Modern tech stack keywords relevant to ${target}
+• Posts/articles published in the last 6 months
+• Recent projects or side work
+
+**HEADLINE REWRITE** (age-neutral, achievement-forward):
+[Write a complete headline that removes age signals and leads with value]
+
+**ABOUT REWRITE** (first paragraph only — sets the tone):
+[Write 3 sentences that project current expertise without dates]
+
+TODO: Remove graduation year and dates from roles older than 15 years
+TODO: Add at least one recent certification badge to your profile this month`,
 
     skills: `${systemBase}
 
 Current LinkedIn skills: "${userInput}"
 
-Provide:
-1. Top 15 recommended skills for ${target} (ordered by importance)
-2. Skills to ADD that are not in their current list
-3. Top 5 skills to get endorsements for first
-4. Three action items: "TODO: [action]"`,
+Provide a COMPLETE skills strategy — not just a list:
+
+**SKILLS AUDIT**:
+✓ Keep (relevant to ${target}): [list from their current skills]
+✗ Remove (outdated or irrelevant): [list]
++ Add immediately (must-have for ${target}): [ordered by recruiter search frequency]
+
+**TOP 20 SKILLS FOR ${target.toUpperCase()} IN 2025** (ordered by LinkedIn search volume):
+1. [Skill] — appears in X% of ${target} job postings
+2. [Skill]
+... continue to 20
+
+**SKILLS TO ENDORSE FIRST** (top 5 — endorsement count visible to recruiters):
+1. [Skill] — ask [type of person — e.g., "engineers you've shipped code with"]
+2. [Skill] — ask [person type]
+... continue to 5
+
+**ENDORSEMENT STRATEGY**: How to get 10+ endorsements per top skill fast — give them a specific plan.
+
+**ALGORITHM NOTE**: LinkedIn lets recruiters filter by skills with 5+ endorsements. This filter eliminates 80% of candidates — being in the top 20% here is critical.
+
+TODO: Add the top 10 missing skills from the list above immediately
+TODO: Message 5 connections asking them to endorse your top 3 skills (offer to endorse theirs)
+TODO: Reorder skills — put your top 3 target-role skills first (they show in search previews)`,
   };
 
   return prompts[step] || `${systemBase}\n\nUser input: "${userInput}"\n\nProvide helpful LinkedIn optimization advice for the "${step}" section. Include 1-2 action items as "TODO: [action]"`;

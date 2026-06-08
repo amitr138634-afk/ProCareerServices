@@ -71,12 +71,17 @@ Requirements:
 };
 
 interface SectionScore { present: boolean; score: number; note: string; }
+interface FormattingFlag { issue: string; severity: "critical" | "warning" | "info"; fix: string; }
 interface ATSResult {
   atsScore: number;
+  industryDetected?: string;
   scoreBreakdown: { keywordMatch: number; formatting: number; sections: number; achievements: number; readability: number };
   keywordsFound: string[];
   keywordsMissing: string[];
   sectionAnalysis: { contactInfo: SectionScore; summary: SectionScore; experience: SectionScore; education: SectionScore; skills: SectionScore };
+  formattingFlags?: FormattingFlag[];
+  bulletStrength?: { total: number; withMetrics: number; percentage: number };
+  impactScore?: number;
   recommendations: string[];
   topStrengths: string[];
   verdict: string;
@@ -426,11 +431,23 @@ export default function ATSScanner() {
           <div className="space-y-5">
             <div className="glass-dark rounded-2xl p-6">
               <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="flex-shrink-0"><ScoreRing score={result.atsScore} size={110} /></div>
+                <div className="flex-shrink-0 relative">
+                  <ScoreRing score={result.atsScore} size={110} />
+                  {result.impactScore !== undefined && (
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                      <span className="text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ background: result.impactScore >= 70 ? "#10B98120" : "#F59E0B20", color: result.impactScore >= 70 ? "#10B981" : "#F59E0B", border: `1px solid ${result.impactScore >= 70 ? "#10B98140" : "#F59E0B40"}` }}>
+                        Impact {result.impactScore}/100
+                      </span>
+                    </div>
+                  )}
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1 flex-wrap">
                     <h2 className="text-white font-black text-xl">ATS Score</h2>
                     <span className={`text-sm font-black ${scoreColor(result.atsScore)}`}>{scoreLabel(result.atsScore)}</span>
+                    {result.industryDetected && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-purple/10 border border-brand-purple/25 text-brand-purple font-bold">{result.industryDetected}</span>
+                    )}
                     {hasPaid && (
                       <button onClick={downloadReport}
                         className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-brand-teal/30 bg-brand-teal/10 text-brand-teal hover:bg-brand-teal/20 transition-all">
@@ -493,26 +510,108 @@ export default function ATSScanner() {
               </div>
             </div>
 
+            {/* Formatting Audit — premium only */}
+            {result.isPremium && result.formattingFlags && result.formattingFlags.length > 0 && (
+              <div className="glass-dark rounded-2xl p-5">
+                <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  Formatting Audit
+                  {result.formattingFlags.filter(f => f.severity === "critical").length > 0 && (
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/25 font-bold">
+                      {result.formattingFlags.filter(f => f.severity === "critical").length} Critical
+                    </span>
+                  )}
+                </h3>
+                <div className="space-y-2.5">
+                  {result.formattingFlags.map((flag, i) => {
+                    const colors = {
+                      critical: { bg: "bg-red-500/8 border-red-500/20", badge: "bg-red-500/15 text-red-400 border-red-500/25", dot: "#EF4444" },
+                      warning:  { bg: "bg-yellow-500/8 border-yellow-500/20", badge: "bg-yellow-500/15 text-yellow-400 border-yellow-500/25", dot: "#F59E0B" },
+                      info:     { bg: "bg-brand-blue/5 border-brand-blue/15", badge: "bg-brand-blue/10 text-brand-blue border-brand-blue/25", dot: "#0EA5E9" },
+                    };
+                    const c = colors[flag.severity];
+                    return (
+                      <div key={i} className={`rounded-xl border p-3.5 ${c.bg}`}>
+                        <div className="flex items-start gap-2.5">
+                          <span className={`flex-shrink-0 text-[9px] px-1.5 py-0.5 rounded-full border font-black uppercase tracking-wide mt-0.5 ${c.badge}`}>{flag.severity}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white/80 text-xs font-semibold mb-1">{flag.issue}</p>
+                            <p className="text-white/40 text-[11px] leading-relaxed">Fix: {flag.fix}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Bullet Strength meter */}
+            {result.bulletStrength && (
+              <div className="glass-dark rounded-2xl p-5">
+                <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-brand-blue" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                  Achievement Strength
+                </h3>
+                <div className="flex items-center gap-5">
+                  <div className="flex-1">
+                    <div className="flex justify-between text-xs mb-1.5">
+                      <span className="text-white/50">Bullets with measurable metrics</span>
+                      <span className={`font-black ${result.bulletStrength.percentage >= 60 ? "text-brand-teal" : result.bulletStrength.percentage >= 30 ? "text-yellow-400" : "text-red-400"}`}>
+                        {result.bulletStrength.percentage}%
+                      </span>
+                    </div>
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${result.bulletStrength.percentage >= 60 ? "bg-gradient-to-r from-brand-teal to-brand-blue" : result.bulletStrength.percentage >= 30 ? "bg-gradient-to-r from-yellow-500 to-orange-400" : "bg-gradient-to-r from-red-500 to-rose-400"}`}
+                        style={{ width: `${result.bulletStrength.percentage}%` }}
+                      />
+                    </div>
+                    <p className="text-white/30 text-[10px] mt-1.5">
+                      {result.bulletStrength.withMetrics} of {result.bulletStrength.total} bullets have numbers/% · Target: 70%+
+                    </p>
+                  </div>
+                  <div className="text-center flex-shrink-0">
+                    <div className={`text-2xl font-black ${result.bulletStrength.percentage >= 60 ? "text-brand-teal" : result.bulletStrength.percentage >= 30 ? "text-yellow-400" : "text-red-400"}`}>
+                      {result.bulletStrength.percentage >= 60 ? "Strong" : result.bulletStrength.percentage >= 30 ? "Average" : "Weak"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="glass-dark rounded-2xl p-5">
               <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
                 <svg className="w-4 h-4 text-brand-purple" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 Recommendations
-                {!result.isPremium && <span className="ml-auto text-[10px] text-yellow-400 font-normal">Showing 2 of 12+</span>}
+                {!result.isPremium && <span className="ml-auto text-[10px] text-yellow-400 font-normal">Showing 2 of 13+</span>}
               </h3>
               <div className="space-y-2">
                 {result.recommendations.map((rec, i) => {
                   const isLocked = !result.isPremium && i >= 2;
+                  const impactTag = rec.startsWith("[HIGH]") ? "HIGH" : rec.startsWith("[MEDIUM]") ? "MEDIUM" : rec.startsWith("[LOW]") ? "LOW" : null;
+                  const recText = impactTag ? rec.replace(/^\[(HIGH|MEDIUM|LOW)\]\s*/, "") : rec;
+                  const tagColors: Record<string, string> = { HIGH: "bg-red-500/15 text-red-400 border-red-500/25", MEDIUM: "bg-yellow-500/15 text-yellow-400 border-yellow-500/25", LOW: "bg-brand-blue/10 text-brand-blue border-brand-blue/25" };
                   return (
                     <div key={i} className={`flex gap-3 p-3 rounded-xl ${isLocked ? "bg-white/2 border border-white/5" : "bg-white/5"}`}>
-                      <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black mt-0.5 ${isLocked ? "bg-white/5 text-white/20" : "bg-brand-purple/20 text-brand-purple"}`}>{isLocked ? "🔒" : i + 1}</div>
-                      <p className={`text-xs leading-relaxed ${isLocked ? "text-white/15 blur-[4px] select-none" : "text-white/75"}`}>{isLocked ? "Add quantified metrics to your experience section to improve ATS ranking significantly." : rec}</p>
+                      <div className="flex-shrink-0 mt-0.5">
+                        {isLocked
+                          ? <span className="text-white/20 text-xs">🔒</span>
+                          : impactTag
+                            ? <span className={`text-[8px] px-1.5 py-0.5 rounded-full border font-black uppercase tracking-wide ${tagColors[impactTag]}`}>{impactTag}</span>
+                            : <span className="w-5 h-5 rounded-full bg-brand-purple/20 text-brand-purple text-[10px] font-black flex items-center justify-center">{i + 1}</span>
+                        }
+                      </div>
+                      <p className={`text-xs leading-relaxed ${isLocked ? "text-white/15 blur-[4px] select-none" : "text-white/80"}`}>
+                        {isLocked ? "Quantify your achievements with specific metrics to significantly boost your ATS ranking for this role." : recText}
+                      </p>
                     </div>
                   );
                 })}
               </div>
               {!result.isPremium && (
                 <div className="mt-4 p-4 rounded-xl border border-brand-teal/20 bg-brand-teal/5 text-center">
-                  <p className="text-white/70 text-xs mb-3">Unlock <strong className="text-white">10+ more recommendations</strong>, full keyword analysis & downloadable PDF</p>
+                  <p className="text-white/70 text-xs mb-3">Unlock <strong className="text-white">13+ tagged recommendations</strong>, formatting audit, bullet strength analysis & PDF</p>
                   <button className="px-6 py-2 rounded-lg font-bold text-sm text-white" style={{ background: "linear-gradient(135deg,#10B981,#0EA5E9)" }}>Upgrade — ₹200</button>
                 </div>
               )}
