@@ -622,9 +622,10 @@ export default function LinkedInOptimizer() {
       addMessage(
         "assistant",
         isBusy
-          ? "The AI is a bit busy right now. Please wait 10 seconds and try again — just re-type your answer."
+          ? "The AI is a bit busy right now. Please wait 10 seconds and try again."
           : "Sorry, something went wrong. Please try again."
       );
+      if (currentStep.inputType !== "competency") setInput(text);
     } finally {
       setIsLoading(false);
     }

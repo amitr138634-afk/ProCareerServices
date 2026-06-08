@@ -209,7 +209,7 @@ const HERO_SLIDES: HeroSlide[] = [
     desc: "Facing a workplace dispute, contract confusion, or legal question? Our AI legal assistant will help you understand your rights, draft letters, and connect you with the right professionals — fast and affordable.",
     features: ["Workplace & employment law guidance", "Contract review & red-flag detection", "Legal letter & notice drafting", "Know-your-rights explainers", "Connect to verified legal professionals"],
     cta: "Notify Me →",
-    href: "/#contact",
+    href: "/legal-ai",
     comingSoon: true,
     icon: (
       <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -229,7 +229,7 @@ const HERO_SLIDES: HeroSlide[] = [
     desc: "From inventory and HR to finance and CRM — we build custom ERP and business automation solutions for SMEs and startups using AI to cut manual work, reduce errors, and give you real-time business insights.",
     features: ["Custom ERP setup for your business", "HR, payroll & attendance management", "Inventory & supply chain tracking", "Finance, invoicing & reporting", "CRM + sales pipeline automation"],
     cta: "Express Interest →",
-    href: "/#contact",
+    href: "/erp",
     comingSoon: true,
     icon: (
       <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -249,7 +249,7 @@ const HERO_SLIDES: HeroSlide[] = [
     desc: "Structured video courses on resume writing, LinkedIn growth, interview preparation, and in-demand tech & business skills — with certificates, lifetime access, and direct placement support.",
     features: ["Resume & LinkedIn masterclass", "Interview preparation bootcamp", "In-demand tech & business skill tracks", "Certificate of completion", "Lifetime access on enrollment"],
     cta: "Join Waitlist →",
-    href: "/#contact",
+    href: "/courses",
     comingSoon: true,
     icon: (
       <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">

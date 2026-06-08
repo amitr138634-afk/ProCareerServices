@@ -117,9 +117,7 @@ async function runWithFallback(chain: [string, ProviderFn][], prompt: string): P
     let lastErr = "";
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        console.log(`[AI] ${name} attempt ${attempt}/3...`);
         const text = await fn(prompt);
-        console.log(`[AI] ${name} succeeded on attempt ${attempt}`);
         return text;
       } catch (err: unknown) {
         lastErr = err instanceof Error ? err.message : String(err);

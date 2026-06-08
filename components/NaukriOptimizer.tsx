@@ -531,6 +531,7 @@ export default function NaukriOptimizer() {
       const msg = err instanceof Error ? err.message : "";
       const isBusy = msg.includes("busy") || msg.includes("quota") || msg.includes("unavailable");
       addMessage("assistant", isBusy ? "The AI is a bit busy right now. Please wait 10 seconds and try again." : "Sorry, something went wrong. Please try again.");
+      setInput(text);
     } finally { setIsLoading(false); }
   };
 

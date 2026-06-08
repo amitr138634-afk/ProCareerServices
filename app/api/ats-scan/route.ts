@@ -68,7 +68,6 @@ async function generate(prompt: string): Promise<string> {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const text = await fn(prompt);
-        console.log(`[ATS] ${name} succeeded`);
         return text;
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
