@@ -116,10 +116,10 @@ function buildATSPrompt(resumeText: string, jobDescription: string, isPremium: b
 Analyze this resume against the job description and return a JSON response ONLY (no markdown, no explanation outside JSON).
 
 RESUME:
-${resumeText.slice(0, 4000)}
+${resumeText.slice(0, 8000)}
 
 JOB DESCRIPTION:
-${jobDescription.slice(0, 2000)}
+${jobDescription.slice(0, 3000)}
 
 ${depth}
 
@@ -170,6 +170,28 @@ export async function POST(req: NextRequest) {
     // Strip markdown code fences if AI wraps JSON in them
     const cleaned = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
     const result = JSON.parse(cleaned);
+
+    // ── Section presence safety-net ───────────────────────────────────────────
+    // Run regex over the FULL extracted text (not the sliced prompt text) so
+    // truncation can never cause a real section to be marked as missing.
+    const fullText = resumeText.toLowerCase();
+    const SECTION_PATTERNS: Record<string, RegExp> = {
+      contactInfo: /\b(email|phone|mobile|linkedin|github|contact)\b|@[a-z]/,
+      summary:     /\b(summary|objective|profile|about me|professional profile|career objective)\b/,
+      experience:  /\b(experience|employment|work history|internship|worked at|professional experience)\b/,
+      education:   /\b(education|academic|degree|university|college|institute|b\.tech|b\.e\b|bachelor|master|mba|bsc|msc|phd|10th|12th|school|cgpa|gpa|graduation)\b/,
+      skills:      /\b(skills|technical skills|competencies|technologies|proficient|tools)\b/,
+    };
+    for (const [key, pattern] of Object.entries(SECTION_PATTERNS)) {
+      if (pattern.test(fullText) && result.sectionAnalysis?.[key]) {
+        result.sectionAnalysis[key].present = true;
+        // If AI scored a clearly-present section below 60, floor it at 60
+        if (result.sectionAnalysis[key].score < 60) {
+          result.sectionAnalysis[key].score = 60;
+        }
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     // ── Section-driven score correction ──────────────────────────────────────
     // If all 5 resume sections score >= 80, the overall ATS score must be >= 90.
