@@ -2,9 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { OPTIMIZATION_STEPS, COMPETENCY_OPTIONS } from "@/lib/steps";
-import { generateProfileReport } from "@/lib/generateReport";
 import { usePaid } from "./PaidContext";
 import ProfessionalHelpButton from "./ProfessionalHelpButton";
+import MarkdownText from "./MarkdownText";
 
 declare global {
   interface Window {
@@ -13,6 +13,7 @@ declare global {
 }
 
 const FREE_STEPS_COUNT = 5; // steps 0-4 are free
+const MAX_COMPETENCIES = 5;
 
 interface Message {
   id: string;
@@ -61,29 +62,41 @@ function TypingIndicator({ aiStep }: { aiStep?: boolean }) {
 
 function MessageBubble({ msg }: { msg: Message }) {
   const isUser = msg.role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(msg.content).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className={`flex items-start gap-3 message-animate ${isUser ? "flex-row-reverse" : ""}`}>
+    <div className={`flex items-start gap-3 message-animate group ${isUser ? "flex-row-reverse" : ""}`}>
       {!isUser && (
         <div className="w-8 h-8 rounded-full btn-glow flex items-center justify-center flex-shrink-0 text-white text-xs font-black">
           AI
         </div>
       )}
-      <div
-        className={`max-w-[88%] md:max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-          isUser
-            ? "rounded-tr-none text-white/90"
-            : "glass rounded-tl-none text-white/80"
-        }`}
-        style={
-          isUser
-            ? {
-                background: "rgba(14,165,233,0.12)",
-                border: "1px solid rgba(14,165,233,0.2)",
-              }
-            : undefined
-        }
+      <div className={`relative max-w-[88%] md:max-w-[78%] rounded-2xl px-4 py-3 ${isUser ? "rounded-tr-none" : "glass rounded-tl-none"}`}
+        style={isUser ? { background: "rgba(14,165,233,0.12)", border: "1px solid rgba(14,165,233,0.2)" } : undefined}
       >
-        {msg.content}
+        {isUser ? (
+          <p className="text-sm text-white/90 leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+        ) : (
+          <>
+            <MarkdownText content={msg.content} />
+            <button
+              onClick={handleCopy}
+              title="Copy response"
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-white/10 text-white/30 hover:text-white/70"
+            >
+              {copied
+                ? <span className="text-[10px] font-black text-brand-teal">✓</span>
+                : <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+              }
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -623,7 +636,7 @@ export default function LinkedInOptimizer() {
 
   const toggleCompetency = (c: string) => {
     setSelectedCompetencies((prev) =>
-      prev.includes(c) ? prev.filter((x) => x !== c) : prev.length < 3 ? [...prev, c] : prev
+      prev.includes(c) ? prev.filter((x) => x !== c) : prev.length < MAX_COMPETENCIES ? [...prev, c] : prev
     );
   };
 
@@ -753,9 +766,9 @@ export default function LinkedInOptimizer() {
             {isCompetencyStep ? (
               <div className="space-y-3">
                 <p className="text-xs text-white/40 font-medium">
-                  Select up to 3 competencies
+                  Select up to {MAX_COMPETENCIES} competencies
                   {selectedCompetencies.length > 0 && (
-                    <span className="ml-2 gradient-text font-bold">({selectedCompetencies.length}/3)</span>
+                    <span className="ml-2 gradient-text font-bold">({selectedCompetencies.length}/{MAX_COMPETENCIES})</span>
                   )}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -788,7 +801,7 @@ export default function LinkedInOptimizer() {
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             const t = customCompetency.trim();
-                            if (t && !selectedCompetencies.includes(t) && selectedCompetencies.length < 3) {
+                            if (t && !selectedCompetencies.includes(t) && selectedCompetencies.length < MAX_COMPETENCIES) {
                               setSelectedCompetencies((p) => [...p, t]);
                             }
                             setCustomCompetency("");
@@ -802,7 +815,7 @@ export default function LinkedInOptimizer() {
                       <button
                         onClick={() => {
                           const t = customCompetency.trim();
-                          if (t && !selectedCompetencies.includes(t) && selectedCompetencies.length < 3) {
+                          if (t && !selectedCompetencies.includes(t) && selectedCompetencies.length < MAX_COMPETENCIES) {
                             setSelectedCompetencies((p) => [...p, t]);
                           }
                           setCustomCompetency("");

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { NAUKRI_STEPS } from "@/lib/naukri-steps";
 import { usePaid } from "./PaidContext";
 import ProfessionalHelpButton from "./ProfessionalHelpButton";
+import MarkdownText from "./MarkdownText";
 
 declare global {
   interface Window {
@@ -50,19 +51,43 @@ function TypingIndicator({ aiStep }: { aiStep?: boolean }) {
 
 function MessageBubble({ msg }: { msg: Message }) {
   const isUser = msg.role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(msg.content).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className={`flex items-start gap-3 message-animate ${isUser ? "flex-row-reverse" : ""}`}>
+    <div className={`flex items-start gap-3 message-animate group ${isUser ? "flex-row-reverse" : ""}`}>
       {!isUser && (
         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-black"
           style={{ background: `linear-gradient(135deg,${NAUKRI_COLOR},#F97316)` }}>N</div>
       )}
       <div
-        className={`max-w-[88%] md:max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-          isUser ? "rounded-tr-none text-white/90" : "glass rounded-tl-none text-white/80"
+        className={`relative max-w-[88%] md:max-w-[78%] rounded-2xl px-4 py-3 ${
+          isUser ? "rounded-tr-none" : "glass rounded-tl-none"
         }`}
         style={isUser ? { background: `rgba(255,107,53,0.12)`, border: `1px solid rgba(255,107,53,0.2)` } : undefined}
       >
-        {msg.content}
+        {isUser ? (
+          <p className="text-sm text-white/90 leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+        ) : (
+          <>
+            <MarkdownText content={msg.content} />
+            <button
+              onClick={handleCopy}
+              title="Copy response"
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-white/10 text-white/30 hover:text-white/70"
+            >
+              {copied
+                ? <span className="text-[10px] font-black" style={{ color: NAUKRI_COLOR }}>✓</span>
+                : <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+              }
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -383,6 +408,97 @@ export default function NaukriOptimizer() {
     setTimeout(() => { addMessage("assistant", nextStep.question); setCurrentStepIndex(FREE_STEPS_COUNT); }, 600);
   };
 
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
+  const handleDownloadNaukriReport = () => {
+    setIsGeneratingReport(true);
+    try {
+      const date = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+      const target = profileData["target-role"] || "—";
+      const experience = profileData["experience"] || "—";
+
+      const stepLabels: Record<string, string> = {
+        "naukri-url": "Naukri Profile URL",
+        "target-role": "Target Role",
+        "experience": "Experience",
+        "ctc-notice": "CTC & Notice Period",
+        "resume-headline": "Resume Headline",
+        "profile-summary": "Profile Summary",
+        "key-skills": "Key Skills",
+        "work-experience": "Work Experience",
+        "it-skills": "IT Skills",
+        "projects": "Projects",
+        "education": "Education",
+        "preferred-locations": "Preferred Locations",
+        "online-profiles": "Online Profiles",
+      };
+
+      const sectionsHtml = Object.entries(stepResponses)
+        .filter(([key]) => !["naukri-url", "target-role", "experience", "ctc-notice"].includes(key))
+        .map(([key, response]) => `
+          <div class="section">
+            <div class="section-title">${stepLabels[key] ?? key}</div>
+            <div class="user-input"><strong>Your input:</strong> ${(profileData[key] || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+            <div class="response">${response.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br/>")}</div>
+          </div>
+        `).join("");
+
+      const todoItems = todos.map((t, i) => `
+        <div class="todo-item ${t.completed ? "done" : ""}">
+          <span class="todo-num">${i + 1}</span>
+          <span>${t.action.replace(/</g, "&lt;")}</span>
+          ${t.completed ? '<span class="done-badge">Done</span>' : ""}
+        </div>
+      `).join("");
+
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Naukri Optimization Report — ProCareerLaunchpad</title><style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;background:#fff;padding:40px;max-width:820px;margin:0 auto}
+        @media print{body{padding:20px}@page{margin:15mm}}
+        .header{border-bottom:3px solid #FF6B35;padding-bottom:16px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start}
+        .brand{font-size:20px;font-weight:900;color:#FF6B35;letter-spacing:-0.5px}
+        .meta{text-align:right;font-size:12px;color:#888;line-height:1.8}
+        .profile-bar{display:flex;gap:24px;background:#fff5f0;border:1px solid #FF6B3530;border-radius:12px;padding:16px 20px;margin-bottom:20px;flex-wrap:wrap}
+        .profile-item label{font-size:10px;font-weight:700;color:#FF6B35;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px}
+        .profile-item span{font-size:13px;font-weight:600;color:#333}
+        .section{background:#fafafa;border:1px solid #eee;border-radius:10px;padding:16px 20px;margin-bottom:16px}
+        .section-title{font-size:12px;font-weight:800;color:#FF6B35;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+        .user-input{font-size:11px;color:#888;margin-bottom:8px;padding:8px;background:#f5f5f5;border-radius:6px;border-left:3px solid #FF6B3540}
+        .response{font-size:12px;color:#333;line-height:1.7}
+        .todos{background:#f0fff8;border:1px solid #10B98130;border-radius:10px;padding:16px 20px;margin-bottom:16px}
+        .todos-title{font-size:12px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px}
+        .todo-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #e8f8f0;font-size:12px;color:#333}
+        .todo-item:last-child{border-bottom:none}
+        .todo-item.done{color:#aaa;text-decoration:line-through}
+        .todo-num{width:20px;height:20px;background:#10B98115;color:#10B981;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px}
+        .done-badge{margin-left:auto;font-size:9px;font-weight:700;color:#10B981;background:#10B98115;padding:2px 6px;border-radius:10px;white-space:nowrap}
+        .footer{margin-top:32px;padding-top:16px;border-top:1px solid #eee;text-align:center;font-size:11px;color:#aaa}
+        .footer a{color:#FF6B35;text-decoration:none;font-weight:600}
+      </style></head><body>
+        <div class="header">
+          <div><div class="brand">Naukri Profile Optimization Report</div><div style="font-size:12px;color:#888;margin-top:3px">by ProCareerLaunchpad</div></div>
+          <div class="meta"><div>${date}</div><div>AI-powered · Personalized</div></div>
+        </div>
+        <div class="profile-bar">
+          <div class="profile-item"><label>Target Role</label><span>${target}</span></div>
+          <div class="profile-item"><label>Experience</label><span>${experience}</span></div>
+          <div class="profile-item"><label>CTC & Notice</label><span>${(profileData["ctc-notice"] || "—").slice(0, 60)}</span></div>
+        </div>
+        ${sectionsHtml}
+        ${todos.length > 0 ? `<div class="todos"><div class="todos-title">Action Items (${todos.length})</div>${todoItems}</div>` : ""}
+        <div class="footer">Generated by <a href="https://procareerservices.vercel.app">ProCareerLaunchpad</a> · ${date} · Implement these changes within 48 hours for best results</div>
+      </body></html>`;
+
+      const printHtml = html.replace("</body>", `<script>window.onload=()=>setTimeout(()=>window.print(),300)</script></body>`);
+      const blob = new Blob([printHtml], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
   const handleSend = async (overrideText?: string) => {
     const currentStep = NAUKRI_STEPS[currentStepIndex];
     const text = overrideText ?? input.trim();
@@ -528,8 +644,33 @@ export default function NaukriOptimizer() {
         )}
 
         {isComplete && (
-          <div className="glass-dark border-t border-white/5 p-4">
-            <p className="text-white/50 text-sm font-semibold text-center">🎉 Your Naukri profile is fully optimized! Check your Action Items →</p>
+          <div className="glass-dark border-t p-5 space-y-3" style={{ borderColor: `${NAUKRI_COLOR}30` }}>
+            <div className="text-center">
+              <p className="font-black text-base mb-1" style={{ color: NAUKRI_COLOR }}>All sections complete!</p>
+              <p className="text-white/40 text-xs">Download your full Naukri optimization report below</p>
+            </div>
+            <button
+              onClick={handleDownloadNaukriReport}
+              disabled={isGeneratingReport}
+              className="w-full py-3 rounded-xl font-bold text-sm text-white disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:opacity-90"
+              style={{ background: `linear-gradient(135deg,${NAUKRI_COLOR},#F97316)` }}
+            >
+              {isGeneratingReport ? (
+                <><svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Generating…</>
+              ) : (
+                <><svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" /></svg>Download Naukri Optimization Report (PDF)</>
+              )}
+            </button>
+            <p className="text-center text-white/20 text-[10px]">All AI analysis + action items · Implement within 48 hrs for best results</p>
+            <button
+              onClick={() => {
+                if (!confirm("Start a new session? Your current progress will be cleared.")) return;
+                localStorage.removeItem(SESSION_KEY);
+                localStorage.removeItem(PAID_KEY);
+                window.location.reload();
+              }}
+              className="w-full py-2 rounded-xl text-xs text-white/25 hover:text-white/50 transition-colors"
+            >↺ Start a new analysis</button>
             {hasPaid && <ProfessionalHelpButton service="Naukri Optimizer" />}
           </div>
         )}

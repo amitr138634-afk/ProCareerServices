@@ -5,6 +5,21 @@ import Link from "next/link";
 import { usePaid } from "./PaidContext";
 import ProfessionalHelpButton from "./ProfessionalHelpButton";
 
+declare global {
+  interface Window {
+    Razorpay: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
+
+const IS_TEST_MODE = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID?.startsWith("rzp_test");
+const SCAN_STAGES = [
+  "Extracting text from resume…",
+  "Matching keywords against job description…",
+  "Checking section structure and completeness…",
+  "Evaluating achievement strength…",
+  "Generating recommendations…",
+];
+
 const ATS_SESSION_KEY = "procareer_ats_session";
 
 const JD_TEMPLATES: Record<string, string> = {
@@ -131,10 +146,13 @@ export default function ATSScanner() {
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [scanStage, setScanStage] = useState("");
   const [result, setResult] = useState<ATSResult | null>(null);
   const [error, setError] = useState("");
   const [hasPaid, setHasPaid] = useState(serverIsPaid);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const scanStageRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Restore session on mount; context value is source of truth
   useEffect(() => {
@@ -175,13 +193,72 @@ export default function ATSScanner() {
 
   const onTemplateSelect = (t: string) => { setSelectedTemplate(t); setJobDescription(JD_TEMPLATES[t] || ""); };
 
-  const handleScan = async () => {
+  const loadRazorpay = (): Promise<boolean> =>
+    new Promise((resolve) => {
+      if (window.Razorpay) { resolve(true); return; }
+      const s = document.createElement("script");
+      s.src = "https://checkout.razorpay.com/v1/checkout.js";
+      s.onload = () => resolve(true);
+      s.onerror = () => resolve(false);
+      document.body.appendChild(s);
+    });
+
+  const handleUpgradePayment = async () => {
+    setIsPaymentProcessing(true);
+    try {
+      const loaded = await loadRazorpay();
+      if (!loaded) { alert("Payment gateway failed to load. Please try again."); return; }
+      const orderRes = await fetch("/api/create-order", { method: "POST" });
+      const orderData = await orderRes.json();
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: orderData.amount, currency: "INR",
+        name: "ProCareerLaunchpad",
+        description: "ATS Scanner — Full Premium Report",
+        order_id: orderData.orderId,
+        handler: async (response: Record<string, string>) => {
+          const verifyRes = await fetch("/api/verify-payment", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response),
+          });
+          const { verified } = await verifyRes.json();
+          if (verified) {
+            setHasPaid(true);
+            // Re-scan immediately as premium to get full results
+            if (file && jobDescription.trim()) handleScan(true);
+          } else {
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: { name: "", email: "" },
+        theme: { color: "#10B981" },
+        modal: { ondismiss: () => setIsPaymentProcessing(false) },
+      };
+      new window.Razorpay(options).open();
+    } catch {
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setIsPaymentProcessing(false);
+    }
+  };
+
+  const handleScan = async (premiumOverride?: boolean) => {
     if (!file || !jobDescription.trim()) { setError("Upload a resume and add a job description."); return; }
+    const isPremium = premiumOverride ?? hasPaid;
     setIsScanning(true); setError(""); setResult(null);
+
+    // Cycle through progress stage messages so users know what's happening
+    let stageIdx = 0;
+    setScanStage(SCAN_STAGES[0]);
+    scanStageRef.current = setInterval(() => {
+      stageIdx = Math.min(stageIdx + 1, SCAN_STAGES.length - 1);
+      setScanStage(SCAN_STAGES[stageIdx]);
+    }, 4000);
+
     const form = new FormData();
     form.append("resume", file);
     form.append("jobDescription", jobDescription);
-    form.append("isPremium", String(hasPaid));
+    form.append("isPremium", String(isPremium));
     try {
       const res = await fetch("/api/ats-scan", { method: "POST", body: form });
       const data = await res.json();
@@ -189,7 +266,11 @@ export default function ATSScanner() {
       setResult(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
-    } finally { setIsScanning(false); }
+    } finally {
+      if (scanStageRef.current) clearInterval(scanStageRef.current);
+      setScanStage("");
+      setIsScanning(false);
+    }
   };
 
   const scoreLabel = (s: number) => s >= 75 ? "Excellent" : s >= 60 ? "Good" : s >= 40 ? "Needs Work" : "Poor";
@@ -378,7 +459,7 @@ export default function ATSScanner() {
                     <svg className="w-5 h-5 text-brand-teal/60" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   </div>
                   <p className="text-brand-teal/70 font-semibold text-sm">{fileName}</p>
-                  <p className="text-white/25 text-xs mt-1">Last scanned file · Click to re-upload</p>
+                  <p className="text-yellow-400/70 text-xs mt-1 font-semibold">⚠ Re-upload required to scan again</p>
                 </div>
               ) : (
                 <div>
@@ -412,17 +493,27 @@ export default function ATSScanner() {
             <textarea value={jobDescription} onChange={(e) => { setJobDescription(e.target.value); setSelectedTemplate(""); }}
               placeholder="Paste the full job description here, or pick a template above…" rows={8}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white/80 text-xs resize-none focus:outline-none focus:border-brand-blue/50 placeholder-white/20" />
+            <div className="flex justify-between items-center mt-1.5 px-1">
+              <span className="text-white/20 text-[10px]">More text = better analysis</span>
+              <span className={`text-[10px] font-semibold ${jobDescription.length > 2800 ? "text-yellow-400" : "text-white/20"}`}>
+                {jobDescription.length}/3000 chars
+              </span>
+            </div>
           </div>
         </div>
 
         {error && <p className="text-red-400 text-xs text-center mb-3">{error}</p>}
         <div className="text-center mb-8 md:mb-10">
-          <button onClick={handleScan} disabled={isScanning || !file || !jobDescription.trim()}
+          <button onClick={() => handleScan()} disabled={isScanning || !file || !jobDescription.trim()}
             className="w-full sm:w-auto px-10 py-3.5 rounded-xl font-black text-sm text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all relative overflow-hidden group"
             style={{ background: "linear-gradient(135deg, #10B981, #0EA5E9)" }}>
             <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all" />
             <span className="relative flex items-center gap-2">
-              {isScanning ? (<><svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Scanning…</>) : (<><svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>Scan Resume</>)}
+              {isScanning ? (
+                <><svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>{scanStage || "Scanning…"}</>
+              ) : (
+                <><svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>Scan Resume</>
+              )}
             </span>
           </button>
         </div>
@@ -612,7 +703,17 @@ export default function ATSScanner() {
               {!result.isPremium && (
                 <div className="mt-4 p-4 rounded-xl border border-brand-teal/20 bg-brand-teal/5 text-center">
                   <p className="text-white/70 text-xs mb-3">Unlock <strong className="text-white">13+ tagged recommendations</strong>, formatting audit, bullet strength analysis & PDF</p>
-                  <button className="px-6 py-2 rounded-lg font-bold text-sm text-white" style={{ background: "linear-gradient(135deg,#10B981,#0EA5E9)" }}>Upgrade — ₹200</button>
+                  <button
+                    onClick={handleUpgradePayment}
+                    disabled={isPaymentProcessing}
+                    className="px-6 py-2 rounded-lg font-bold text-sm text-white disabled:opacity-60 flex items-center gap-2 mx-auto transition-all hover:opacity-90"
+                    style={{ background: "linear-gradient(135deg,#10B981,#0EA5E9)" }}
+                  >
+                    {isPaymentProcessing
+                      ? <><svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Processing…</>
+                      : IS_TEST_MODE ? "Upgrade — ₹200 (Test)" : "Upgrade — ₹200"
+                    }
+                  </button>
                 </div>
               )}
             </div>
