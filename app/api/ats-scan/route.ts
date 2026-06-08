@@ -171,6 +171,43 @@ export async function POST(req: NextRequest) {
     const cleaned = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
     const result = JSON.parse(cleaned);
 
+    // ── Section-driven score correction ──────────────────────────────────────
+    // If all 5 resume sections score >= 80, the overall ATS score must be >= 90.
+    // This prevents the AI from under-scoring well-structured resumes.
+    if (result.sectionAnalysis) {
+      const sectionScores: number[] = Object.values(result.sectionAnalysis).map(
+        (s) => (s as { score: number }).score ?? 0
+      );
+      const allSectionsStrong = sectionScores.length === 5 && sectionScores.every((s) => s >= 80);
+
+      if (allSectionsStrong && result.atsScore < 90) {
+        // Compute how much we need to lift the overall score
+        const lift = 90 - result.atsScore;
+        result.atsScore = 90;
+
+        // Distribute the lift proportionally across breakdown sub-scores
+        // so the breakdown still sums to atsScore and looks coherent
+        const bd = result.scoreBreakdown;
+        const maxes = { keywordMatch: 30, formatting: 20, sections: 20, achievements: 15, readability: 15 };
+        const headroom = Object.entries(maxes).reduce(
+          (acc, [k, max]) => { acc[k] = max - (bd[k] ?? 0); return acc; },
+          {} as Record<string, number>
+        );
+        const totalHeadroom = Object.values(headroom).reduce((a, b) => a + b, 0);
+        if (totalHeadroom > 0) {
+          for (const key of Object.keys(maxes)) {
+            const add = Math.round((headroom[key] / totalHeadroom) * lift);
+            bd[key] = Math.min((bd[key] ?? 0) + add, maxes[key as keyof typeof maxes]);
+          }
+        }
+
+        // Also ensure the sections breakdown sub-score reflects strong section scores
+        const avgSection = sectionScores.reduce((a, b) => a + b, 0) / sectionScores.length;
+        bd.sections = Math.max(bd.sections ?? 0, Math.round((avgSection / 100) * 20));
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     return NextResponse.json({ ...result, isPremium });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
