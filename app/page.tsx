@@ -109,10 +109,10 @@ const HERO_SLIDES: HeroSlide[] = [
     gradientTo: "#EF444408",
     badge: "Human + AI · ₹5,000/mo",
     badgeColor: "text-amber-400 bg-amber-400/10 border-amber-400/25",
-    title: "Social Media Marketing",
+    title: "Content Creation",
     tagline: "A personal brand that works while you sleep.",
-    desc: "Monthly content retainer — we handle your full social media presence. LinkedIn, Instagram, Twitter/X. AI-drafted, human-refined, posted consistently so you stay visible and grow your professional audience.",
-    features: ["20+ LinkedIn posts per month", "Instagram captions + reel scripts", "Twitter / X thread strategy", "Content calendar & scheduling", "Monthly analytics & growth report"],
+    desc: "Monthly content retainer — we create scroll-stopping content for LinkedIn, Instagram, Facebook, and your website. Reels, posts, blogs, carousels — AI-drafted, human-refined, posted consistently so you stay visible and grow.",
+    features: ["LinkedIn posts, carousels & articles", "Instagram & Facebook reels + posts", "Blog writing for website / Medium", "Content calendar & scheduling", "Monthly analytics & growth report"],
     cta: "Get Content Plan →",
     href: "/content",
     icon: (
@@ -358,10 +358,10 @@ const SERVICES: ServiceCard[] = [
     color: "#F59E0B",
     badge: "Human + AI · ₹5,000/mo",
     badgeBg: "bg-yellow-500/10 border-yellow-500/25 text-yellow-400",
-    title: "Social Media Marketing",
-    subtitle: "Content creation & brand growth",
-    desc: "Monthly retainer — we manage your full social media presence. LinkedIn, Instagram, Twitter/X. AI-drafted, human-refined, posted consistently so you grow your professional audience.",
-    features: ["20+ LinkedIn posts per month", "Instagram captions + reel scripts", "Twitter / X thread strategy", "Content calendar & scheduling", "Monthly analytics & growth report"],
+    title: "Content Creation",
+    subtitle: "Multi-platform content & brand growth",
+    desc: "Monthly retainer — we create and manage content across LinkedIn, Instagram, Facebook, and your website. Reels, posts, blogs, carousels — AI-drafted, human-refined, posted consistently so you grow.",
+    features: ["LinkedIn posts, carousels & articles", "Instagram & Facebook reels + posts", "Blog writing for website / Medium", "Content calendar & scheduling", "Monthly analytics & growth report"],
     cta: "Get Content Plan →",
     ctaStyle: "amber-btn",
     href: "/content",
@@ -857,9 +857,9 @@ export default function HomePage() {
                   highlight: false,
                 },
                 {
-                  name: "Social Media Marketing", price: "₹5,000", model: "Per month",
+                  name: "Content Creation", price: "₹5,000", model: "Per month",
                   color: "#F59E0B", href: "/content", cta: "Get Plan →",
-                  features: ["20+ posts/month", "All platforms", "Monthly analytics"],
+                  features: ["Reels, posts & blogs", "All platforms", "Monthly analytics"],
                   highlight: false,
                 },
               ].map((p) => (
@@ -1090,7 +1090,7 @@ export default function HomePage() {
               <p className="text-white/70 font-bold text-sm mb-3">Services</p>
               <div className="space-y-2">
                 <a href="/resume" className="block text-white/35 hover:text-white text-xs transition-colors">Resume Creation</a>
-                <a href="/content" className="block text-white/35 hover:text-white text-xs transition-colors">Social Media Marketing</a>
+                <a href="/content" className="block text-white/35 hover:text-white text-xs transition-colors">Content Creation</a>
                 <a href="/portfolio" className="block text-white/35 hover:text-white text-xs transition-colors">Portfolio Creation</a>
                 <a href="/career" className="block text-white/35 hover:text-white text-xs transition-colors">Career Counseling</a>
                 <a href="/pay" className="block text-brand-teal/60 hover:text-brand-teal text-xs transition-colors font-bold">💳 Pay for a Service</a>
