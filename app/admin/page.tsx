@@ -30,6 +30,15 @@ function timeAgo(iso: string) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
+const ALL_SVCS = [
+  { key: "linkedin",  label: "LinkedIn Optimizer", color: "#10B981", isAuto: true },
+  { key: "naukri",    label: "Naukri Optimizer",   color: "#FF6B35", isAuto: true },
+  { key: "ats",       label: "ATS Scanner",        color: "#8B5CF6", isAuto: true },
+  { key: "resume",    label: "Resume Writing",     color: "#0EA5E9", isAuto: false },
+  { key: "portfolio", label: "Portfolio",          color: "#F59E0B", isAuto: false },
+  { key: "content",   label: "Content Creation",   color: "#EC4899", isAuto: false },
+];
+
 const STATUS_COLORS = {
   new: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
   contacted: "bg-brand-blue/15 text-brand-blue border-brand-blue/30",
@@ -433,6 +442,16 @@ export default function AdminPage() {
     e.preventDefault();
     setAuthError("");
     await fetchData(password, adminEmail.trim().toLowerCase());
+  };
+
+  const deleteServiceRequest = async (id: string) => {
+    if (!confirm("Delete this service request permanently?")) return;
+    await fetch("/api/admin", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", ...adminHeaders(savedPw, savedEmail) },
+      body: JSON.stringify({ id, type: "request" }),
+    });
+    await fetchData(savedPw, savedEmail);
   };
 
   const updateStatus = async (id: string, status: string) => {
@@ -946,21 +965,43 @@ export default function AdminPage() {
             )}
 
             {/* Recent payments */}
-            <div className="glass rounded-2xl p-6 border border-white/6">
-              <h2 className="text-white font-black mb-4">Recent Payments</h2>
+            <div className="glass rounded-2xl border border-white/6 overflow-hidden">
+              <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                <h2 className="text-white font-black">Recent Payments</h2>
+                <span className="text-white/30 text-xs">{payments.length} total</span>
+              </div>
               {payments.length === 0 ? (
-                <p className="text-white/30 text-sm">No payments recorded yet.</p>
+                <p className="text-white/30 text-sm p-6">No payments recorded yet.</p>
               ) : (
-                <div className="space-y-2">
-                  {payments.slice(0, 8).map((p) => (
-                    <div key={p.id} className="flex items-center justify-between p-3 bg-white/3 rounded-xl">
-                      <div>
-                        <p className="text-white text-sm font-semibold">{p.email}</p>
-                        <p className="text-white/40 text-xs">{p.service} · {timeAgo(p.createdAt)}</p>
+                <div className="divide-y divide-white/4">
+                  {payments.slice(0, 10).map((p) => {
+                    const customer = users.find((u) => u.email === p.email);
+                    const svc = ALL_SVCS.find((s) => s.key === p.service);
+                    return (
+                      <div key={p.id} className="flex items-center gap-4 px-6 py-3 hover:bg-white/2 transition-colors">
+                        {/* Avatar */}
+                        {customer?.image
+                          ? <img src={customer.image} alt="" className="w-8 h-8 rounded-full border border-white/10 flex-shrink-0" />
+                          : <div className="w-8 h-8 rounded-full bg-brand-teal/15 flex items-center justify-center text-brand-teal font-black text-xs flex-shrink-0">
+                              {(customer?.name || p.email)[0].toUpperCase()}
+                            </div>}
+                        {/* Customer info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-sm font-bold leading-tight">{customer?.name || p.email}</p>
+                          <p className="text-white/35 text-[11px] truncate">{p.email}{customer?.phone ? ` · ${customer.phone}` : ""}</p>
+                        </div>
+                        {/* Service pill */}
+                        <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap flex-shrink-0"
+                          style={{ background: (svc?.color ?? "#fff") + "18", color: svc?.color ?? "#aaa", border: `1px solid ${(svc?.color ?? "#fff")}30` }}>
+                          {svc?.label ?? p.service}
+                        </span>
+                        {/* Time */}
+                        <span className="text-white/25 text-[11px] flex-shrink-0 hidden md:block">{timeAgo(p.createdAt)}</span>
+                        {/* Amount */}
+                        <span className="text-brand-teal font-black text-sm flex-shrink-0">₹{p.amount.toLocaleString("en-IN")}</span>
                       </div>
-                      <span className="text-brand-teal font-black text-sm">₹{p.amount}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1052,14 +1093,6 @@ export default function AdminPage() {
           const hasFilters = custSearch || custFilterService !== "all" || custFilterPayment !== "all" || custSort !== "newest";
           // ──────────────────────────────────────────────────────────────
 
-          const ALL_SVCS = [
-            { key: "linkedin",  label: "LinkedIn Optimizer", color: "#10B981", isAuto: true },
-            { key: "naukri",    label: "Naukri Optimizer",   color: "#FF6B35", isAuto: true },
-            { key: "ats",       label: "ATS Scanner",        color: "#8B5CF6", isAuto: true },
-            { key: "resume",    label: "Resume Writing",     color: "#0EA5E9", isAuto: false },
-            { key: "portfolio", label: "Portfolio",          color: "#F59E0B", isAuto: false },
-            { key: "content",   label: "Content Creation",   color: "#EC4899", isAuto: false },
-          ];
           const TEAM = ["", "Amit", "Baibhav", "Rahul", "Pooja", "Team"];
           const STATUS_OPTS: { value: OrderStatus; label: string }[] = [
             { value: "new", label: "New" },
@@ -1839,6 +1872,10 @@ export default function AdminPage() {
                       className="px-3 py-1.5 rounded-lg bg-white/5 text-white/50 border border-white/10 text-xs font-bold hover:text-white transition-colors">
                       Email Client
                     </a>
+                    <button onClick={() => deleteServiceRequest(r.id)}
+                      className="ml-auto px-3 py-1.5 rounded-lg border border-white/8 text-white/25 hover:text-red-400 hover:border-red-400/30 text-xs font-bold transition-all">
+                      🗑 Delete
+                    </button>
                   </div>
                 </div>
               ))

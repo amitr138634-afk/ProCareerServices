@@ -80,6 +80,7 @@ interface DataStore {
   getAllRequests(): Promise<ServiceRequest[]>;
   saveServiceRequest(req: Omit<ServiceRequest, "id" | "createdAt" | "status">): Promise<ServiceRequest>;
   updateRequestStatus(id: string, status: ServiceRequest["status"]): Promise<void>;
+  deleteRequest(id: string): Promise<void>;
   saveFeedback(r: Omit<FeedbackRecord, "id" | "createdAt" | "approved">): Promise<FeedbackRecord>;
   getApprovedFeedback(): Promise<FeedbackRecord[]>;
   getAllFeedbackAdmin(): Promise<FeedbackRecord[]>;
@@ -376,6 +377,11 @@ class MongoStore implements DataStore {
     await db.collection("requests").updateOne({ id }, { $set: { status } });
   }
 
+  async deleteRequest(id: string): Promise<void> {
+    const db = await this.db();
+    await db.collection("requests").deleteOne({ id });
+  }
+
   async saveFeedback(r: Omit<FeedbackRecord, "id" | "createdAt" | "approved">): Promise<FeedbackRecord> {
     const db = await this.db();
     const record: FeedbackRecord = { ...r, id: newId("fb"), createdAt: new Date().toISOString(), approved: false };
@@ -554,6 +560,7 @@ class MemoryStore implements DataStore {
   async getAllPayments(): Promise<PaymentRecord[]> { return this.payments; }
   async deletePayment(id: string): Promise<void> { this.payments = this.payments.filter((p) => p.id !== id); }
   async getAllRequests(): Promise<ServiceRequest[]> { return this.requests; }
+  async deleteRequest(id: string): Promise<void> { this.requests = this.requests.filter((r) => r.id !== id); }
 
   async saveServiceRequest(req: Omit<ServiceRequest, "id" | "createdAt" | "status">): Promise<ServiceRequest> {
     const record: ServiceRequest = { ...req, id: newId("req"), createdAt: new Date().toISOString(), status: "new" };
@@ -683,6 +690,7 @@ export const deletePayment = (id: string) => store.deletePayment(id);
 export const getAllRequests = () => store.getAllRequests();
 export const saveServiceRequest = (req: Omit<ServiceRequest, "id" | "createdAt" | "status">) => store.saveServiceRequest(req);
 export const updateRequestStatus = (id: string, status: ServiceRequest["status"]) => store.updateRequestStatus(id, status);
+export const deleteRequest = (id: string) => store.deleteRequest(id);
 export const saveFeedback = (r: Omit<FeedbackRecord, "id" | "createdAt" | "approved">) => store.saveFeedback(r);
 export const getApprovedFeedback = () => store.getApprovedFeedback();
 export const getAllFeedbackAdmin = () => store.getAllFeedbackAdmin();

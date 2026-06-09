@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllUsers, getAllPayments, getAllRequests, getUserPaidStatus, updateRequestStatus, deletePayment } from "@/lib/db";
+import { getAllUsers, getAllPayments, getAllRequests, getUserPaidStatus, updateRequestStatus, deletePayment, deleteRequest } from "@/lib/db";
 
 function checkAuth(req: NextRequest): boolean {
   const pw = process.env.ADMIN_PASSWORD;
@@ -48,9 +48,10 @@ export async function GET(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id } = await req.json();
+  const { id, type } = await req.json();
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  await deletePayment(id);
+  if (type === "request") await deleteRequest(id);
+  else await deletePayment(id);
   return NextResponse.json({ success: true });
 }
 
