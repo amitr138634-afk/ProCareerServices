@@ -335,6 +335,16 @@ export default function AdminPage() {
     if (updates.paymentStatus === "paid") await fetchData(savedPw, savedEmail);
   };
 
+  const deletePaymentById = async (id: string) => {
+    if (!confirm("Delete this transaction? This only removes the record — it does not issue a refund.")) return;
+    setData((prev) => prev ? { ...prev, payments: prev.payments.filter((p) => p.id !== id) } : prev);
+    await fetch("/api/admin", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", ...adminHeaders(savedPw, savedEmail) },
+      body: JSON.stringify({ id }),
+    });
+  };
+
   const deleteOrderById = async (id: string) => {
     if (!confirm("Delete this order?")) return;
     setOrders((prev) => prev.filter((o) => o.id !== id));
@@ -1665,7 +1675,12 @@ export default function AdminPage() {
                                 <span className="text-brand-teal font-black text-sm">₹{p.amount?.toLocaleString("en-IN") ?? "—"}</span>
                                 <span className="text-white/40 text-xs">{dt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
                                 <span className="text-white/25 text-xs">{dt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
-                                {p.razorpayId && <span className="text-white/20 font-mono text-[10px] ml-auto">{p.razorpayId}</span>}
+                                {p.razorpayId && <span className="text-white/20 font-mono text-[10px]">{p.razorpayId}</span>}
+                                <button onClick={() => deletePaymentById(p.id)}
+                                  title="Delete transaction"
+                                  className="ml-auto px-2 py-1 rounded-lg border border-white/8 text-white/20 hover:text-red-400 hover:border-red-400/30 text-[10px] font-bold transition-all">
+                                  🗑
+                                </button>
                               </div>
                             );
                           })}
@@ -1717,10 +1732,17 @@ export default function AdminPage() {
                               </p>
                             </td>
                             <td className="px-4 py-3 text-center">
-                              <button onClick={() => sendEmailToUser(p.email)} disabled={sendingTo === p.email}
-                                className="px-3 py-1.5 rounded-lg border border-white/10 text-white/35 hover:text-brand-teal hover:border-brand-teal/30 text-[10px] font-bold transition-all disabled:opacity-40 whitespace-nowrap">
-                                {sendingTo === p.email ? "…" : "✉ Email"}
-                              </button>
+                              <div className="flex items-center justify-center gap-2">
+                                <button onClick={() => sendEmailToUser(p.email)} disabled={sendingTo === p.email}
+                                  className="px-3 py-1.5 rounded-lg border border-white/10 text-white/35 hover:text-brand-teal hover:border-brand-teal/30 text-[10px] font-bold transition-all disabled:opacity-40 whitespace-nowrap">
+                                  {sendingTo === p.email ? "…" : "✉ Email"}
+                                </button>
+                                <button onClick={() => deletePaymentById(p.id)}
+                                  title="Delete transaction"
+                                  className="px-2 py-1.5 rounded-lg border border-white/8 text-white/25 hover:text-red-400 hover:border-red-400/30 text-[10px] font-bold transition-all">
+                                  🗑
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );

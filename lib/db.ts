@@ -76,6 +76,7 @@ interface DataStore {
   getUserByEmail(email: string): Promise<UserRecord | null>;
   getAllUsers(): Promise<UserRecord[]>;
   getAllPayments(): Promise<PaymentRecord[]>;
+  deletePayment(id: string): Promise<void>;
   getAllRequests(): Promise<ServiceRequest[]>;
   saveServiceRequest(req: Omit<ServiceRequest, "id" | "createdAt" | "status">): Promise<ServiceRequest>;
   updateRequestStatus(id: string, status: ServiceRequest["status"]): Promise<void>;
@@ -353,6 +354,11 @@ class MongoStore implements DataStore {
     return db.collection<PaymentRecord>("payments").find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
   }
 
+  async deletePayment(id: string): Promise<void> {
+    const db = await this.db();
+    await db.collection("payments").deleteOne({ id });
+  }
+
   async getAllRequests(): Promise<ServiceRequest[]> {
     const db = await this.db();
     return db.collection<ServiceRequest>("requests").find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
@@ -546,6 +552,7 @@ class MemoryStore implements DataStore {
   }
 
   async getAllPayments(): Promise<PaymentRecord[]> { return this.payments; }
+  async deletePayment(id: string): Promise<void> { this.payments = this.payments.filter((p) => p.id !== id); }
   async getAllRequests(): Promise<ServiceRequest[]> { return this.requests; }
 
   async saveServiceRequest(req: Omit<ServiceRequest, "id" | "createdAt" | "status">): Promise<ServiceRequest> {
@@ -672,6 +679,7 @@ export const getUserByEmail = (email: string) => store.getUserByEmail(email);
 export const getAllUsers = () => store.getAllUsers();
 export const deleteUser = (email: string) => store.deleteUser(email);
 export const getAllPayments = () => store.getAllPayments();
+export const deletePayment = (id: string) => store.deletePayment(id);
 export const getAllRequests = () => store.getAllRequests();
 export const saveServiceRequest = (req: Omit<ServiceRequest, "id" | "createdAt" | "status">) => store.saveServiceRequest(req);
 export const updateRequestStatus = (id: string, status: ServiceRequest["status"]) => store.updateRequestStatus(id, status);
