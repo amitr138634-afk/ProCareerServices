@@ -56,7 +56,7 @@ export default function SuccessStories() {
 
   useEffect(() => {
     if (paused || total < 2) return;
-    const t = setInterval(next, 5000);
+    const t = setInterval(next, 7500);
     return () => clearInterval(t);
   }, [paused, next, total]);
 
