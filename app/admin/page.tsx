@@ -68,6 +68,12 @@ export default function AdminPage() {
   const [custFilterService, setCustFilterService] = useState<"all" | OrderService>("all");
   const [custFilterPayment, setCustFilterPayment] = useState<"all" | "paid" | "unpaid">("all");
   const [custSort, setCustSort] = useState<"newest" | "oldest" | "lastseen" | "revenue">("newest");
+  const [expandedCustomers, setExpandedCustomers] = useState<Set<string>>(new Set());
+  const toggleCustomer = (email: string) => setExpandedCustomers((prev) => {
+    const next = new Set(prev);
+    next.has(email) ? next.delete(email) : next.add(email);
+    return next;
+  });
   const [paySearch, setPaySearch] = useState("");
   const [payFilterSvc, setPayFilterSvc] = useState("all");
   const [paySort, setPaySort] = useState<"newest" | "oldest" | "amount_desc" | "amount_asc">("newest");
@@ -1153,156 +1159,184 @@ export default function AdminPage() {
               ) : visibleUsers.length === 0 ? (
                 <div className="glass rounded-2xl p-10 text-center text-white/30">No customers match the filters.</div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {visibleUsers.map((u) => {
                     const paidServices = u.paidServices ?? [];
                     const userOrders = orders.filter((o) => o.customerEmail === u.email);
                     const paidOrders = userOrders.filter((o) => o.paymentStatus === "paid");
                     const totalRevenue = paidOrders.reduce((s, o) => s + o.paymentAmount, 0);
+                    const isExpanded = expandedCustomers.has(u.email);
+                    const handlers = [...new Set(userOrders.map((o) => o.handledBy).filter(Boolean))];
 
                     return (
                       <div key={u.email} className="glass rounded-2xl border border-white/6 overflow-hidden">
 
-                        {/* ── Customer info header ── */}
-                        <div className="p-5 flex flex-wrap gap-4 items-center">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            {u.image
-                              ? <img src={u.image} alt="" className="w-10 h-10 rounded-full border border-white/10 flex-shrink-0" />
-                              : <div className="w-10 h-10 rounded-full bg-brand-teal/15 flex items-center justify-center text-brand-teal font-black flex-shrink-0">{(u.name || u.email)[0].toUpperCase()}</div>}
-                            <div className="min-w-0">
-                              <p className="text-white font-black text-sm">{u.name || "—"}</p>
-                              <p className="text-white/40 text-xs truncate">{u.email}</p>
-                              {u.phone && <p className="text-white/30 text-xs">📞 {u.phone}</p>}
+                        {/* ── Collapsed header row (always visible, clickable to toggle) ── */}
+                        <div
+                          className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-white/3 transition-colors select-none"
+                          onClick={() => toggleCustomer(u.email)}
+                        >
+                          {/* Avatar */}
+                          {u.image
+                            ? <img src={u.image} alt="" className="w-9 h-9 rounded-full border border-white/10 flex-shrink-0" />
+                            : <div className="w-9 h-9 rounded-full bg-brand-teal/15 flex items-center justify-center text-brand-teal font-black text-sm flex-shrink-0">{(u.name || u.email)[0].toUpperCase()}</div>}
+
+                          {/* Name + email */}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-white font-black text-sm leading-tight">{u.name || "—"}</p>
+                            <p className="text-white/35 text-[11px] truncate">{u.email}{u.phone ? ` · ${u.phone}` : ""}</p>
+                          </div>
+
+                          {/* Services opted pills */}
+                          <div className="hidden sm:flex items-center gap-1.5 flex-wrap flex-shrink-0 max-w-[280px]">
+                            {userOrders.length === 0
+                              ? <span className="text-white/20 text-[10px]">No services</span>
+                              : userOrders.map((o) => {
+                                  const svc = ALL_SVCS.find((s) => s.key === o.service);
+                                  return (
+                                    <span key={o.id} className="px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap"
+                                      style={{ background: (svc?.color ?? "#fff") + "18", color: svc?.color ?? "#fff", border: `1px solid ${(svc?.color ?? "#fff")}30` }}>
+                                      {svc?.label ?? o.service}
+                                      {o.paymentStatus === "paid" && <span className="ml-1 opacity-60">✓</span>}
+                                    </span>
+                                  );
+                                })}
+                          </div>
+
+                          {/* Stats */}
+                          <div className="hidden md:flex items-center gap-3 flex-shrink-0 text-center">
+                            <div>
+                              <p className="text-white/20 text-[9px] uppercase tracking-wide">Revenue</p>
+                              <p className="text-brand-teal text-xs font-black">₹{totalRevenue.toLocaleString("en-IN")}</p>
+                            </div>
+                            {handlers.length > 0 && (
+                              <div>
+                                <p className="text-white/20 text-[9px] uppercase tracking-wide">Handled by</p>
+                                <p className="text-white/50 text-xs font-bold truncate max-w-[80px]">{handlers.join(", ")}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action buttons — stop propagation so they don't toggle the row */}
+                          <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <button onClick={() => sendEmailToUser(u.email)} disabled={sendingTo === u.email}
+                              className="px-2.5 py-1.5 rounded-lg border border-white/10 text-white/30 hover:text-brand-teal hover:border-brand-teal/30 text-[11px] font-bold transition-all disabled:opacity-40">
+                              {sendingTo === u.email ? "…" : "✉"}
+                            </button>
+                            <button onClick={() => deleteCustomer(u.email, u.name)}
+                              title="Delete customer"
+                              className="px-2.5 py-1.5 rounded-lg border border-white/8 text-white/20 hover:text-red-400 hover:border-red-400/30 text-[11px] font-bold transition-all">
+                              🗑
+                            </button>
+                          </div>
+
+                          {/* Chevron */}
+                          <svg className={`w-4 h-4 text-white/25 flex-shrink-0 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                            fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+
+                        {/* ── Expanded detail panel ── */}
+                        {isExpanded && (
+                          <div className="border-t border-white/5">
+                            {/* Stats bar */}
+                            <div className="px-4 py-2.5 flex flex-wrap gap-4 bg-white/2 border-b border-white/4 text-xs">
+                              <span className="text-white/30">Joined <strong className="text-white/55">{timeAgo(u.createdAt)}</strong></span>
+                              <span className="text-white/30">Last seen <strong className="text-white/55">{timeAgo(u.lastSeen)}</strong></span>
+                              <span className="text-white/30">Revenue <strong className="text-brand-teal">₹{totalRevenue.toLocaleString("en-IN")}</strong></span>
+                              {userOrders.length > 0 && <span className="text-white/30">{userOrders.length} service{userOrders.length > 1 ? "s" : ""} opted</span>}
+                            </div>
+
+                            {/* Services table */}
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-xs min-w-[700px]">
+                                <thead>
+                                  <tr className="border-b border-white/5 bg-white/2">
+                                    <th className="text-left px-4 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-36">Service</th>
+                                    <th className="text-center px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-20">Opted</th>
+                                    <th className="text-left px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-24">Amount</th>
+                                    <th className="text-left px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-28">Payment</th>
+                                    <th className="text-left px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-32">Order Status</th>
+                                    <th className="text-left px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-28">Handled By</th>
+                                    <th className="text-center px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-24">Access</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {ALL_SVCS.map((svc) => {
+                                    const order = userOrders.find((o) => o.service === svc.key);
+                                    const hasAccess = paidServices.includes(svc.key);
+                                    const toggling = accessTogglingKey === `${u.email}:${svc.key}`;
+                                    const isChecked = !!order;
+
+                                    return (
+                                      <tr key={svc.key} className={`border-b border-white/4 transition-colors ${isChecked ? "bg-white/2" : "opacity-50 hover:opacity-80"}`}>
+                                        <td className="px-4 py-3">
+                                          <span className="font-black text-xs" style={{ color: svc.color }}>{svc.label}</span>
+                                        </td>
+                                        <td className="px-3 py-3 text-center">
+                                          <input type="checkbox" checked={isChecked}
+                                            onChange={() => isChecked ? deleteOrderById(order!.id) : createOrderForUser(u, svc.key)}
+                                            className="w-4 h-4 cursor-pointer rounded" style={{ accentColor: svc.color }} />
+                                        </td>
+                                        <td className="px-3 py-3">
+                                          {order ? (
+                                            <div className="flex items-center gap-1">
+                                              <span className="text-white/30">₹</span>
+                                              <input type="number" min={0} defaultValue={order.paymentAmount}
+                                                onBlur={(e) => { const v = Number(e.target.value); if (v !== order.paymentAmount) patchOrder(order.id, { paymentAmount: v }); }}
+                                                className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-brand-teal/40 text-xs" />
+                                            </div>
+                                          ) : <span className="text-white/20">—</span>}
+                                        </td>
+                                        <td className="px-3 py-3">
+                                          {order ? (
+                                            <button onClick={() => patchOrder(order.id, { paymentStatus: order.paymentStatus === "paid" ? "pending" : "paid" })}
+                                              className={`px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all whitespace-nowrap ${order.paymentStatus === "paid" ? "bg-brand-teal/15 border-brand-teal/40 text-brand-teal" : "bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20"}`}>
+                                              {order.paymentStatus === "paid" ? "✓ Paid" : "Mark Paid"}
+                                            </button>
+                                          ) : <span className="text-white/20">—</span>}
+                                        </td>
+                                        <td className="px-3 py-3">
+                                          {order ? (
+                                            <select value={order.orderStatus}
+                                              onChange={(e) => patchOrder(order.id, { orderStatus: e.target.value as OrderStatus })}
+                                              className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-white/70 text-xs focus:outline-none w-full max-w-[120px]">
+                                              {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                            </select>
+                                          ) : <span className="text-white/20">—</span>}
+                                        </td>
+                                        <td className="px-3 py-3">
+                                          {order ? (
+                                            <select value={order.handledBy}
+                                              onChange={(e) => patchOrder(order.id, { handledBy: e.target.value })}
+                                              className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-white/70 text-xs focus:outline-none w-full max-w-[110px]">
+                                              {TEAM.map((t) => <option key={t} value={t}>{t || "Assign…"}</option>)}
+                                            </select>
+                                          ) : <span className="text-white/20">—</span>}
+                                        </td>
+                                        <td className="px-3 py-3 text-center">
+                                          {svc.isAuto ? (
+                                            <div className="flex items-center justify-center gap-1.5">
+                                              <button onClick={() => toggleUserAccess(u.email, svc.key, !hasAccess)} disabled={toggling}
+                                                className="relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50"
+                                                style={{ background: hasAccess ? svc.color : "rgba(255,255,255,0.12)" }}>
+                                                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow ${hasAccess ? "translate-x-4" : "translate-x-0.5"}`} />
+                                              </button>
+                                              <span className="text-[10px] font-black w-5" style={{ color: hasAccess ? svc.color : "rgba(255,255,255,0.2)" }}>
+                                                {toggling ? "…" : hasAccess ? "ON" : "OFF"}
+                                              </span>
+                                            </div>
+                                          ) : <span className="text-white/15 text-[10px]">N/A</span>}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
                             </div>
                           </div>
-                          <div className="flex items-center gap-4 text-center flex-shrink-0 flex-wrap">
-                            <div><p className="text-white/25 text-[10px] uppercase tracking-wide">Joined</p><p className="text-white/60 text-xs font-bold">{timeAgo(u.createdAt)}</p></div>
-                            <div><p className="text-white/25 text-[10px] uppercase tracking-wide">Last seen</p><p className="text-white/60 text-xs font-bold">{timeAgo(u.lastSeen)}</p></div>
-                            <div><p className="text-white/25 text-[10px] uppercase tracking-wide">Revenue</p><p className="text-brand-teal text-xs font-black">₹{totalRevenue.toLocaleString("en-IN")}</p></div>
-                          </div>
-                          <button onClick={() => sendEmailToUser(u.email)} disabled={sendingTo === u.email}
-                            className="flex-shrink-0 px-3 py-1.5 rounded-lg border border-white/10 text-white/35 hover:text-brand-teal hover:border-brand-teal/30 text-xs font-bold transition-all disabled:opacity-40">
-                            {sendingTo === u.email ? "…" : "✉ Email"}
-                          </button>
-                          <button onClick={() => deleteCustomer(u.email, u.name)}
-                            title="Delete customer"
-                            className="flex-shrink-0 px-3 py-1.5 rounded-lg border border-white/8 text-white/25 hover:text-red-400 hover:border-red-400/30 text-xs font-bold transition-all">
-                            🗑
-                          </button>
-                        </div>
-
-                        {/* ── Services table ── */}
-                        <div className="border-t border-white/5 overflow-x-auto">
-                          <table className="w-full text-xs min-w-[700px]">
-                            <thead>
-                              <tr className="border-b border-white/5 bg-white/2">
-                                <th className="text-left px-4 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-36">Service</th>
-                                <th className="text-center px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-20">Availed</th>
-                                <th className="text-left px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-24">Amount</th>
-                                <th className="text-left px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-28">Payment</th>
-                                <th className="text-left px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-32">Order Status</th>
-                                <th className="text-left px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-28">Handled By</th>
-                                <th className="text-center px-3 py-2.5 text-white/30 font-bold uppercase tracking-widest text-[10px] w-24">Access</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {ALL_SVCS.map((svc) => {
-                                const order = userOrders.find((o) => o.service === svc.key);
-                                const hasAccess = paidServices.includes(svc.key);
-                                const toggling = accessTogglingKey === `${u.email}:${svc.key}`;
-                                const isChecked = !!order;
-
-                                return (
-                                  <tr key={svc.key} className={`border-b border-white/4 transition-colors ${isChecked ? "bg-white/2" : "opacity-60 hover:opacity-100"}`}>
-
-                                    {/* Service name */}
-                                    <td className="px-4 py-3">
-                                      <span className="font-black text-xs" style={{ color: svc.color }}>{svc.label}</span>
-                                    </td>
-
-                                    {/* Checkbox — availed */}
-                                    <td className="px-3 py-3 text-center">
-                                      <input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        onChange={() => isChecked ? deleteOrderById(order!.id) : createOrderForUser(u, svc.key)}
-                                        className="w-4 h-4 cursor-pointer rounded"
-                                        style={{ accentColor: svc.color }}
-                                      />
-                                    </td>
-
-                                    {/* Amount */}
-                                    <td className="px-3 py-3">
-                                      {order ? (
-                                        <div className="flex items-center gap-1">
-                                          <span className="text-white/30">₹</span>
-                                          <input
-                                            type="number" min={0}
-                                            defaultValue={order.paymentAmount}
-                                            onBlur={(e) => { const v = Number(e.target.value); if (v !== order.paymentAmount) patchOrder(order.id, { paymentAmount: v }); }}
-                                            className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-brand-teal/40 text-xs" />
-                                        </div>
-                                      ) : <span className="text-white/20">—</span>}
-                                    </td>
-
-                                    {/* Payment status */}
-                                    <td className="px-3 py-3">
-                                      {order ? (
-                                        <button
-                                          onClick={() => patchOrder(order.id, { paymentStatus: order.paymentStatus === "paid" ? "pending" : "paid" })}
-                                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all whitespace-nowrap ${order.paymentStatus === "paid" ? "bg-brand-teal/15 border-brand-teal/40 text-brand-teal" : "bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20"}`}>
-                                          {order.paymentStatus === "paid" ? "✓ Paid" : "Mark Paid"}
-                                        </button>
-                                      ) : <span className="text-white/20">—</span>}
-                                    </td>
-
-                                    {/* Order status dropdown */}
-                                    <td className="px-3 py-3">
-                                      {order ? (
-                                        <select
-                                          value={order.orderStatus}
-                                          onChange={(e) => patchOrder(order.id, { orderStatus: e.target.value as OrderStatus })}
-                                          className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-white/70 text-xs focus:outline-none w-full max-w-[120px]">
-                                          {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                                        </select>
-                                      ) : <span className="text-white/20">—</span>}
-                                    </td>
-
-                                    {/* Handled by */}
-                                    <td className="px-3 py-3">
-                                      {order ? (
-                                        <select
-                                          value={order.handledBy}
-                                          onChange={(e) => patchOrder(order.id, { handledBy: e.target.value })}
-                                          className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-white/70 text-xs focus:outline-none w-full max-w-[110px]">
-                                          {TEAM.map((t) => <option key={t} value={t}>{t || "Assign…"}</option>)}
-                                        </select>
-                                      ) : <span className="text-white/20">—</span>}
-                                    </td>
-
-                                    {/* Access toggle — only for LinkedIn / Naukri / ATS */}
-                                    <td className="px-3 py-3 text-center">
-                                      {svc.isAuto ? (
-                                        <div className="flex items-center justify-center gap-1.5">
-                                          <button
-                                            onClick={() => toggleUserAccess(u.email, svc.key, !hasAccess)}
-                                            disabled={toggling}
-                                            className="relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50"
-                                            style={{ background: hasAccess ? svc.color : "rgba(255,255,255,0.12)" }}>
-                                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow ${hasAccess ? "translate-x-4" : "translate-x-0.5"}`} />
-                                          </button>
-                                          <span className="text-[10px] font-black w-5" style={{ color: hasAccess ? svc.color : "rgba(255,255,255,0.2)" }}>
-                                            {toggling ? "…" : hasAccess ? "ON" : "OFF"}
-                                          </span>
-                                        </div>
-                                      ) : <span className="text-white/15 text-[10px]">N/A</span>}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
+                        )}
 
                       </div>
                     );
