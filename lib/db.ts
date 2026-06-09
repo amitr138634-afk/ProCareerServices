@@ -68,7 +68,7 @@ export interface OrderRecord {
 }
 
 interface DataStore {
-  markUserPaid(email: string, service: string, razorpayId?: string): Promise<void>;
+  markUserPaid(email: string, service: string, razorpayId?: string, amount?: number): Promise<void>;
   grantServiceAccess(email: string, service: string): Promise<void>;
   revokeUserService(email: string, service: string): Promise<void>;
   getUserPaidStatus(email: string, service?: string): Promise<{ isPaid: boolean; paidServices: string[] }>;
@@ -282,14 +282,14 @@ class MongoStore implements DataStore {
     return db;
   }
 
-  async markUserPaid(email: string, service: string, razorpayId?: string): Promise<void> {
+  async markUserPaid(email: string, service: string, razorpayId?: string, amount = 200): Promise<void> {
     const db = await this.db();
     await db.collection("sessions").updateOne(
       { email },
       { $addToSet: { paidServices: service }, $set: { email } },
       { upsert: true }
     );
-    await db.collection("payments").insertOne({ id: newId("pay"), email, service, amount: 200, razorpayId: razorpayId ?? "", createdAt: new Date().toISOString() });
+    await db.collection("payments").insertOne({ id: newId("pay"), email, service, amount, razorpayId: razorpayId ?? "", createdAt: new Date().toISOString() });
   }
 
   async grantServiceAccess(email: string, service: string): Promise<void> {
@@ -503,12 +503,12 @@ class MemoryStore implements DataStore {
     this.orders   = readData<OrderRecord[]>("orders.json") ?? [];
   }
 
-  async markUserPaid(email: string, service: string, razorpayId?: string): Promise<void> {
+  async markUserPaid(email: string, service: string, razorpayId?: string, amount = 200): Promise<void> {
     const existing = this.sessions.get(email);
     const paidServices = new Set(existing?.paidServices ?? []);
     paidServices.add(service);
     this.sessions.set(email, { paidServices: [...paidServices] });
-    this.payments.unshift({ id: newId("pay"), email, service, amount: 200, razorpayId: razorpayId ?? "", createdAt: new Date().toISOString() });
+    this.payments.unshift({ id: newId("pay"), email, service, amount, razorpayId: razorpayId ?? "", createdAt: new Date().toISOString() });
   }
 
   async grantServiceAccess(email: string, service: string): Promise<void> {
@@ -670,7 +670,7 @@ export const isPersistent = hasMongo;
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-export const markUserPaid = (email: string, service: string = "linkedin", razorpayId?: string) => store.markUserPaid(email, service, razorpayId);
+export const markUserPaid = (email: string, service: string = "linkedin", razorpayId?: string, amount?: number) => store.markUserPaid(email, service, razorpayId, amount);
 export const grantServiceAccess = (email: string, service: string) => store.grantServiceAccess(email, service);
 export const getUserPaidStatus = (email: string, service?: string) => store.getUserPaidStatus(email, service);
 export const revokeUserService = (email: string, service: string) => store.revokeUserService(email, service);

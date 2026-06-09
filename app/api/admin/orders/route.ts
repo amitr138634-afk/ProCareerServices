@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     // Grant service access if created directly as paid
     if (order.paymentStatus === "paid") {
-      await markUserPaid(order.customerEmail, order.service);
+      await markUserPaid(order.customerEmail, order.service, undefined, order.paymentAmount);
     }
 
     return NextResponse.json({ order });
@@ -64,12 +64,13 @@ export async function PATCH(req: NextRequest) {
 
     await updateOrder(id, updates);
 
-    // When payment flips to "paid" → grant access + record payment
+    // When payment flips to "paid" → grant access + record payment with actual amount
     if (updates.paymentStatus === "paid" && existing?.paymentStatus !== "paid") {
       const email = existing?.customerEmail;
       const service = updates.service ?? existing?.service;
+      const amount = updates.paymentAmount ?? existing?.paymentAmount;
       if (email && service) {
-        await markUserPaid(email, service);
+        await markUserPaid(email, service, undefined, amount);
       }
     }
 
