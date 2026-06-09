@@ -111,6 +111,12 @@ export default function ContentPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
             AI + HUMAN CONTENT CREATION
           </div>
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="inline-flex items-baseline gap-1 px-4 py-2 rounded-2xl border border-yellow-500/30 bg-yellow-500/8">
+              <span className="text-3xl font-black text-yellow-400">₹500</span>
+              <span className="text-yellow-400/60 text-sm font-semibold">/week</span>
+            </div>
+          </div>
           <h1 className="text-3xl md:text-5xl font-black mb-4">
             Content That Builds Your{" "}
             <span

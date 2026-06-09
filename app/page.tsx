@@ -107,7 +107,7 @@ const HERO_SLIDES: HeroSlide[] = [
     color: "#F59E0B",
     gradientFrom: "#F59E0B18",
     gradientTo: "#EF444408",
-    badge: "Human + AI · ₹5,000/mo",
+    badge: "Human + AI · ₹500/week",
     badgeColor: "text-amber-400 bg-amber-400/10 border-amber-400/25",
     title: "Content Creation",
     tagline: "A personal brand that works while you sleep.",
@@ -356,7 +356,7 @@ const SERVICES: ServiceCard[] = [
       </svg>
     ),
     color: "#F59E0B",
-    badge: "Human + AI · ₹5,000/mo",
+    badge: "Human + AI · ₹500/week",
     badgeBg: "bg-yellow-500/10 border-yellow-500/25 text-yellow-400",
     title: "Content Creation",
     subtitle: "Multi-platform content & brand growth",
@@ -857,7 +857,7 @@ export default function HomePage() {
                   highlight: false,
                 },
                 {
-                  name: "Content Creation", price: "₹5,000", model: "Per month",
+                  name: "Content Creation", price: "₹500", model: "Per week",
                   color: "#F59E0B", href: "/content", cta: "Get Plan →",
                   features: ["Reels, posts & blogs", "All platforms", "Monthly analytics"],
                   highlight: false,

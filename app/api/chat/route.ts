@@ -34,9 +34,9 @@ SERVICES & PRICING:
 🔵 Naukri Profile Optimizer — ₹200 (one-time)
    Full AI audit of your Naukri.com profile to boost search visibility and recruiter responses.
 
-📞 Resume Creation — Custom pricing (contact us)
-📞 Social Media Marketing (LinkedIn, Instagram, Twitter) — Monthly retainer (contact us)
-📞 Portfolio Website — Custom pricing (contact us)
+📞 Resume Creation — ₹200 (pay after delivery, contact us to order)
+📞 Content Creation (LinkedIn, Instagram, Facebook, reels, posts, blogs) — ₹500/week
+📞 Portfolio Website — ₹1,099 one-time (contact us to order)
 📞 Career Counseling — Custom pricing (contact us)
 
 🔜 Coming Soon:
