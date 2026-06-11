@@ -68,8 +68,8 @@ export default function AuthGuard({ children, toolName, serviceKey }: AuthGuardP
         </div>
         <div className="relative z-10 w-full max-w-sm text-center">
           <div className="inline-flex items-center gap-2 mb-8">
-            <div className="w-9 h-9 btn-glow rounded-xl flex items-center justify-center text-white font-black">P</div>
-            <span className="font-black text-white text-xl tracking-tight">ProCareer<span className="gradient-text">.</span></span>
+            <div className="w-9 h-9 btn-glow rounded-xl flex items-center justify-center text-white font-black">S</div>
+            <span className="font-black text-white text-xl tracking-tight">Shyam Pro <span className="gradient-text">Services</span></span>
           </div>
 
           <div className="glass-dark rounded-2xl p-8 border border-white/8">

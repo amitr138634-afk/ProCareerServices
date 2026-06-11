@@ -225,8 +225,8 @@ function StepSidebar({
     <div className="hidden md:flex w-52 flex-shrink-0 glass-dark border-r border-white/5 overflow-y-auto flex-col">
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-xs">P</div>
-          <span className="text-xs font-black text-white/80 tracking-tight">ProCareer<span className="gradient-text">.</span></span>
+          <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-xs">S</div>
+          <span className="text-xs font-black text-white/80 tracking-tight">Shyam Pro <span className="gradient-text">Services</span></span>
         </div>
       </div>
 
@@ -532,7 +532,7 @@ export default function LinkedInOptimizer() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: orderData.amount,
         currency: "INR",
-        name: "ProCareerLaunchpad",
+        name: "Shyam Pro Services",
         description: "LinkedIn Full Optimizer — 10 Sections",
         order_id: orderData.orderId,
         handler: async (response: Record<string, string>) => {

@@ -144,7 +144,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
           {/* Meta */}
           <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/8">
-            <div className="w-8 h-8 rounded-full btn-glow flex items-center justify-center text-white font-black text-xs">P</div>
+            <div className="w-8 h-8 rounded-full btn-glow flex items-center justify-center text-white font-black text-xs">S</div>
             <div>
               <p className="text-white/70 text-xs font-semibold">{blog.author}</p>
               <p className="text-white/30 text-[10px]">

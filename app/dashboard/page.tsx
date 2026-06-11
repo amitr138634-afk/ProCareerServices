@@ -68,8 +68,8 @@ export default function DashboardPage() {
       {/* Nav */}
       <div className="glass-dark border-b border-white/8 px-6 py-3 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-xs">P</div>
-          <span className="font-black text-white">ProCareer<span className="text-brand-teal">.</span></span>
+          <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-xs">S</div>
+          <span className="font-black text-white">Shyam Pro <span className="text-brand-teal">Services</span></span>
         </a>
         <div className="flex items-center gap-4">
           <a href="/" className="text-white/40 hover:text-white/70 text-xs transition-colors">← Home</a>

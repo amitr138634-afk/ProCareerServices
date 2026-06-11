@@ -251,7 +251,7 @@ export default function WebDevPage() {
       </section>
 
       <footer className="relative z-10 border-t border-white/5 py-8 px-6 text-center">
-        <Link href="/" className="text-white/30 hover:text-white text-xs transition-colors">← Back to ProCareerLaunchpad</Link>
+        <Link href="/" className="text-white/30 hover:text-white text-xs transition-colors">← Back to Shyam Pro Services</Link>
       </footer>
     </div>
   );

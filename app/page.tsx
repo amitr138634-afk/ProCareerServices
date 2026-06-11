@@ -921,7 +921,7 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
                 <div className="text-xs font-bold text-brand-teal uppercase tracking-widest mb-1">Best Value</div>
-                <h3 className="font-black text-white text-lg">Complete Career Launchpad Bundle</h3>
+                <h3 className="font-black text-white text-lg">Complete Career Bundle</h3>
                 <p className="text-white/40 text-sm">LinkedIn Optimizer + ATS Scanner + Resume Creation + Portfolio Website + Career Counseling</p>
               </div>
               <div className="text-center flex-shrink-0">
@@ -1073,8 +1073,8 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-sm">P</div>
-                <span className="font-black text-white">ProCareerLaunchpad</span>
+                <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-sm">S</div>
+                <span className="font-black text-white">Shyam Pro Services</span>
               </div>
               <p className="text-white/35 text-xs leading-relaxed">AI-powered career tools and human expertise to help you get hired faster.</p>
             </div>
@@ -1123,7 +1123,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-2">
-            <p className="text-white/20 text-xs">© {new Date().getFullYear()} ProCareerLaunchpad. Not affiliated with LinkedIn.</p>
+            <p className="text-white/20 text-xs">© {new Date().getFullYear()} Shyam Pro Services. Not affiliated with LinkedIn.</p>
             <p className="text-white/20 text-xs">Get Hired. Get Ahead.</p>
           </div>
         </div>

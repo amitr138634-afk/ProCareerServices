@@ -21,7 +21,7 @@ const GEMINI_MODEL     = process.env.GEMINI_MODEL        || "gemini-2.5-flash";
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL    || "meta-llama/llama-3.3-70b-instruct:free";
 const CLAUDE_MODEL     = process.env.CLAUDE_MODEL        || "claude-sonnet-4-5";
 
-const SYSTEM_PROMPT = `You are ProCareer AI — the friendly assistant for ProCareerLaunchpad, an AI-powered platform for career growth, business operations, and legal guidance.
+const SYSTEM_PROMPT = `You are Shyam AI — the friendly assistant for Shyam Pro Services, an AI-powered platform for career growth, business operations, and legal guidance.
 
 SERVICES & PRICING:
 ━━━━━━━━━━━━━━━━━━

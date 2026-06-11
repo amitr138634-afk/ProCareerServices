@@ -65,7 +65,7 @@ export default function BlogsPage() {
               ✍️ Career Insights & Tips
             </div>
             <h1 className="text-4xl md:text-5xl font-black mb-3">
-              The <span className="gradient-text">ProCareer</span> Blog
+              The <span className="gradient-text">Shyam Pro Services</span> Blog
             </h1>
             <p className="text-white/40 text-sm max-w-md mx-auto">
               Actionable career tips, job search strategies, and LinkedIn/Naukri optimization guides — written by our team of career experts.
@@ -152,7 +152,7 @@ export default function BlogsPage() {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/5 py-8 px-6 text-center">
-        <Link href="/" className="text-white/30 hover:text-white text-xs transition-colors">← Back to ProCareerLaunchpad</Link>
+        <Link href="/" className="text-white/30 hover:text-white text-xs transition-colors">← Back to Shyam Pro Services</Link>
       </footer>
     </div>
   );

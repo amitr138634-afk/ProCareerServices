@@ -26,7 +26,7 @@ function addFooter(doc: jsPDF, pageNum: number, total: number) {
   doc.rect(0, PH - 12, PW, 12, "F");
   doc.setFontSize(7);
   doc.setTextColor(...GRAY);
-  doc.text("ProCareerLaunchpad — LinkedIn Profile Optimization Report", ML, PH - 4);
+  doc.text("Shyam Pro Services — LinkedIn Profile Optimization Report", ML, PH - 4);
   doc.text(`Page ${pageNum} of ${total}`, PW - MR, PH - 4, { align: "right" });
 }
 
@@ -35,7 +35,7 @@ function addPageHeader(doc: jsPDF) {
   doc.rect(0, 0, PW, 10, "F");
   doc.setFontSize(7);
   doc.setTextColor(...TEAL);
-  doc.text("ProCareerLaunchpad", ML, 6.5);
+  doc.text("Shyam Pro Services", ML, 6.5);
   doc.setTextColor(...GRAY);
   doc.text((process.env.NEXT_PUBLIC_SITE_URL || "localhost:3000").replace(/https?:\/\//, ""), PW - MR, 6.5, { align: "right" });
 }
@@ -78,11 +78,11 @@ export async function generateProfileReport(data: ReportData): Promise<void> {
   // Logo area
   doc.setFontSize(9);
   doc.setTextColor(...TEAL);
-  doc.text("PRO", ML, 22);
+  doc.text("SHYAM", ML, 22);
   doc.setTextColor(...BLUE);
-  doc.text("CAREER", ML + 10, 22);
+  doc.text("PRO", ML + 14, 22);
   doc.setTextColor(...PURPLE);
-  doc.text("LAUNCHPAD", ML + 27, 22);
+  doc.text("SERVICES", ML + 22, 22);
 
   // Badge
   doc.setFillColor(16, 185, 129, 0.15);
@@ -156,7 +156,7 @@ export async function generateProfileReport(data: ReportData): Promise<void> {
   doc.rect(0, PH - 20, PW, 20, "F");
   doc.setFontSize(8);
   doc.setTextColor(...TEAL);
-  doc.text("ProCareerLaunchpad", PW / 2, PH - 10, { align: "center" });
+  doc.text("Shyam Pro Services", PW / 2, PH - 10, { align: "center" });
   doc.setTextColor(...GRAY);
   doc.text("Confidential — prepared exclusively for you", PW / 2, PH - 5, { align: "right" });
 
@@ -358,6 +358,6 @@ export async function generateProfileReport(data: ReportData): Promise<void> {
   }
 
   // ── SAVE ────────────────────────────────────────────────────────────────
-  const filename = `ProCareerLaunchpad_LinkedIn_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+  const filename = `Shyam Pro Services_LinkedIn_Report_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(filename);
 }

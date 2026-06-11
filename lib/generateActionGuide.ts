@@ -67,7 +67,7 @@ function addFooter(doc: jsPDF, pageNum: number, total: number, candidateName: st
   doc.rect(0, PH - 10, PW, 10, "F");
   doc.setFontSize(6.5);
   rgb(doc, "text", C.gray);
-  doc.text("ProCareerLaunchpad — LinkedIn Optimisation Step-by-Step Action Guide", ML, PH - 3.5);
+  doc.text("Shyam Pro Services — LinkedIn Optimisation Step-by-Step Action Guide", ML, PH - 3.5);
   doc.text(`Page ${pageNum} of ${total}`, PW - MR, PH - 3.5, { align: "right" });
   if (candidateName) {
     rgb(doc, "text", C.teal);
@@ -80,7 +80,7 @@ function addPageHeader(doc: jsPDF) {
   doc.rect(0, 0, PW, 8, "F");
   doc.setFontSize(6.5);
   rgb(doc, "text", C.teal);
-  doc.text("ProCareerLaunchpad", ML, 5.5);
+  doc.text("Shyam Pro Services", ML, 5.5);
   rgb(doc, "text", C.gray);
   doc.text("LinkedIn Optimisation Step-by-Step Action Guide", PW - MR, 5.5, { align: "right" });
 }
@@ -119,7 +119,7 @@ function drawCover(doc: jsPDF, guide: ActionGuide, dateStr: string) {
   doc.setFontSize(22);
   rgb(doc, "text", C.white);
   doc.setFont("helvetica", "bold");
-  doc.text("ProCareerLaunchpad", ML, 28);
+  doc.text("Shyam Pro Services", ML, 28);
 
   // Right header text
   doc.setFontSize(8);
@@ -246,7 +246,7 @@ function drawCover(doc: jsPDF, guide: ActionGuide, dateStr: string) {
   doc.setFontSize(6.5);
   rgb(doc, "text", C.gray);
   doc.text(`This document is confidential and prepared exclusively for ${guide.candidateName}.`, PW / 2, PH - 8, { align: "center" });
-  doc.text("ProCareerLaunchpad — Helping Indian professionals land better opportunities through strategic career positioning.", PW / 2, PH - 4, { align: "center" });
+  doc.text("Shyam Pro Services — Helping Indian professionals land better opportunities through strategic career positioning.", PW / 2, PH - 4, { align: "center" });
 }
 
 // ── PHASE HEADER ──────────────────────────────────────────────────────────────
@@ -440,5 +440,5 @@ export async function generateActionGuide(guide: ActionGuide): Promise<void> {
   }
 
   const safeName = safeGuide.candidateName.replace(/[^a-z0-9]/gi, "_");
-  doc.save(`ProCareerLaunchpad_LinkedInStepByStep_${safeName}.pdf`);
+  doc.save(`Shyam Pro Services_LinkedInStepByStep_${safeName}.pdf`);
 }

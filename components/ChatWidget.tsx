@@ -15,7 +15,7 @@ const FALLBACK_EMAIL = "info@procareerlaunchpad.com";
 
 const GREETING: Message = {
   role: "assistant",
-  text: "Hey there! 👋 I'm ProCareer AI — your 24/7 guide to everything ProCareerLaunchpad.\n\nAsk me about pricing, services, or how we can help you grow. I'm here!",
+  text: "Hey there! 👋 I'm Shyam AI — your 24/7 guide to everything Shyam Pro Services.\n\nAsk me about pricing, services, or how we can help you grow. I'm here!",
 };
 
 const QUICK_REPLIES = [
@@ -362,7 +362,7 @@ export default function ChatWidget() {
               </svg>
             </button>
           </div>
-          <p className="text-white/15 text-[10px] text-center mt-2">Powered by ProCareer AI</p>
+          <p className="text-white/15 text-[10px] text-center mt-2">Powered by Shyam AI</p>
         </div>
       </>
     );
@@ -407,7 +407,7 @@ export default function ChatWidget() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-bold text-sm leading-none">
-                  {stage === "chat" ? "ProCareer AI" : "Human Support"}
+                  {stage === "chat" ? "Shyam AI" : "Human Support"}
                 </p>
                 <p className="text-white/70 text-xs mt-0.5">
                   {stage === "chat"    && "Online · Replies instantly"}

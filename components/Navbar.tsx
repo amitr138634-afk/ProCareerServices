@@ -28,9 +28,9 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm btn-glow">P</div>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm btn-glow">S</div>
           <span className="font-black text-white text-base tracking-tight hidden sm:block">
-            ProCareer<span className="gradient-text">Launchpad</span>
+            Shyam Pro <span className="gradient-text">Services</span>
           </span>
         </Link>
 

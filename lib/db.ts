@@ -111,11 +111,11 @@ function newId(prefix: string): string {
 // ── Seed data (fallback only when no persisted file exists) ──────────────────
 
 const SEED_STORIES: StoryRecord[] = [
-  { id: "seed_1", name: "Priya Sharma", role: "Software Engineer · TCS → Flipkart", result: "3x salary hike in 6 weeks", story: "I was stuck at TCS for 2 years with barely any recruiter interest on LinkedIn. After ProCareerLaunchpad rewrote my headline and about section, I started getting 5 InMails a week. Landed at Flipkart in 6 weeks with a 3x salary jump!", imageUrl: "", createdAt: "2025-03-10T10:00:00.000Z" },
+  { id: "seed_1", name: "Priya Sharma", role: "Software Engineer · TCS → Flipkart", result: "3x salary hike in 6 weeks", story: "I was stuck at TCS for 2 years with barely any recruiter interest on LinkedIn. After Shyam Pro Services rewrote my headline and about section, I started getting 5 InMails a week. Landed at Flipkart in 6 weeks with a 3x salary jump!", imageUrl: "", createdAt: "2025-03-10T10:00:00.000Z" },
   { id: "seed_2", name: "Rahul Verma", role: "Data Analyst · Freshers", result: "First job offer in 3 weeks", story: "As a fresher with no industry contacts, I was sending 50 applications a week and hearing nothing. The ATS Scanner showed my resume was scoring 23/100. After fixing the keywords and formatting, I got 4 interview calls in the first week and landed my first job!", imageUrl: "", createdAt: "2025-04-05T09:00:00.000Z" },
   { id: "seed_3", name: "Anjali Mehta", role: "Product Manager · Mid-career switch", result: "Switched from engineering to PM", story: "I had been trying to break into Product Management for 18 months. Career Counseling helped me reframe my entire engineering experience as product thinking. Got offers from 2 startups within 2 months of the session!", imageUrl: "", createdAt: "2025-05-01T11:00:00.000Z" },
-  { id: "seed_4", name: "Vikram Nair", role: "DevOps Engineer · Pune", result: "40% salary increase, remote role", story: "My Naukri profile was outdated and my resume was getting auto-rejected. ProCareerLaunchpad's ATS optimization and Naukri profile rewrite transformed my job search. Went from zero callbacks to 6 interviews in 2 weeks. Now fully remote at 40% higher CTC!", imageUrl: "", createdAt: "2025-05-20T14:00:00.000Z" },
-  { id: "seed_5", name: "Sneha Iyer", role: "UX Designer · Freelancer → Full-time", result: "Portfolio landed 3 client leads", story: "I had skills but no way to showcase them. The portfolio website ProCareerLaunchpad built for me was stunning — clients actually message me through it now. Within a month I converted 3 freelance inquiries into retainer contracts.", imageUrl: "", createdAt: "2025-06-02T08:00:00.000Z" },
+  { id: "seed_4", name: "Vikram Nair", role: "DevOps Engineer · Pune", result: "40% salary increase, remote role", story: "My Naukri profile was outdated and my resume was getting auto-rejected. Shyam Pro Services's ATS optimization and Naukri profile rewrite transformed my job search. Went from zero callbacks to 6 interviews in 2 weeks. Now fully remote at 40% higher CTC!", imageUrl: "", createdAt: "2025-05-20T14:00:00.000Z" },
+  { id: "seed_5", name: "Sneha Iyer", role: "UX Designer · Freelancer → Full-time", result: "Portfolio landed 3 client leads", story: "I had skills but no way to showcase them. The portfolio website Shyam Pro Services built for me was stunning — clients actually message me through it now. Within a month I converted 3 freelance inquiries into retainer contracts.", imageUrl: "", createdAt: "2025-06-02T08:00:00.000Z" },
   { id: "seed_6", name: "Arjun Kapur", role: "MBA Graduate · Marketing", result: "Dream company, 2x package", story: "I was applying to marketing roles for 4 months post-MBA with no luck. The LinkedIn Optimizer completely rewrote my about section and experience bullets — suddenly recruiters were reaching out. Got placed at my dream FMCG company at 2x my previous offer!", imageUrl: "", createdAt: "2025-06-08T10:00:00.000Z" },
 ];
 
@@ -163,7 +163,7 @@ Even 2-3 strong recommendations from managers significantly improve recruiter tr
 - Request one recommendation from your most recent manager
 
 The ROI on 2 hours of LinkedIn optimization can be life-changing.`,
-    coverImage: "", tags: ["LinkedIn", "Career", "Job Search"], author: "ProCareerLaunchpad Team",
+    coverImage: "", tags: ["LinkedIn", "Career", "Job Search"], author: "Shyam Pro Services Team",
     published: true, createdAt: "2025-05-15T10:00:00.000Z", updatedAt: "2025-05-15T10:00:00.000Z",
   },
   {
@@ -209,8 +209,8 @@ One-size-fits-all resumes are dead. Spend 10 minutes customising the keywords fo
 
 ## How to Check Your ATS Score
 
-Use our free ATS Resume Scanner at ProCareerLaunchpad. Upload your resume, paste the job description, and get an instant score with specific fix recommendations. The first scan is completely free.`,
-    coverImage: "", tags: ["ATS", "Resume", "Job Search"], author: "ProCareerLaunchpad Team",
+Use our free ATS Resume Scanner at Shyam Pro Services. Upload your resume, paste the job description, and get an instant score with specific fix recommendations. The first scan is completely free.`,
+    coverImage: "", tags: ["ATS", "Resume", "Job Search"], author: "Shyam Pro Services Team",
     published: true, createdAt: "2025-05-28T10:00:00.000Z", updatedAt: "2025-05-28T10:00:00.000Z",
   },
   {
@@ -246,14 +246,14 @@ If you're a job seeker in India, you've probably wondered: should I focus on Nau
 
 **For long-term career growth**: Invest in LinkedIn content and networking consistently.
 
-## The ProCareerLaunchpad Solution
+## The Shyam Pro Services Solution
 
 We offer dedicated AI optimizers for both platforms:
 - **LinkedIn Optimizer**: 15-section AI analysis, ₹200 one-time
 - **Naukri Optimizer**: 13-section AI analysis, ₹200 one-time
 
 Both have free sections so you can see the quality before paying. Start with whichever platform is more urgent for your job search.`,
-    coverImage: "", tags: ["Naukri", "LinkedIn", "Career", "India"], author: "ProCareerLaunchpad Team",
+    coverImage: "", tags: ["Naukri", "LinkedIn", "Career", "India"], author: "Shyam Pro Services Team",
     published: true, createdAt: "2025-06-01T10:00:00.000Z", updatedAt: "2025-06-01T10:00:00.000Z",
   },
 ];

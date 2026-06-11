@@ -70,7 +70,7 @@ export default function SuccessStories() {
             ⭐ Real People. Real Results.
           </div>
           <h2 className="text-3xl md:text-4xl font-black mb-3">Success Stories</h2>
-          <p className="text-white/40 text-sm max-w-md mx-auto">Hear from job seekers who transformed their career with ProCareerLaunchpad.</p>
+          <p className="text-white/40 text-sm max-w-md mx-auto">Hear from job seekers who transformed their career with Shyam Pro Services.</p>
         </div>
 
         {/* ── Stories carousel ── */}

@@ -72,7 +72,7 @@ export default function PayPage() {
       amount: amt * 100,
       currency: "INR",
       order_id: orderId,
-      name: "ProCareerLaunchpad",
+      name: "Shyam Pro Services",
       description: SERVICES.find((s) => s.value === form.service)?.label ?? form.service,
       prefill: { name: form.name, email: form.email, contact: form.phone },
       theme: { color: "#10B981" },
@@ -107,8 +107,8 @@ export default function PayPage() {
       {/* Nav */}
       <div className="glass-dark border-b border-white/8 px-6 py-3 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-xs">P</div>
-          <span className="font-black text-white">ProCareer<span className="text-brand-teal">.</span></span>
+          <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-xs">S</div>
+          <span className="font-black text-white">Shyam Pro <span className="text-brand-teal">Services</span></span>
         </a>
         <a href="/" className="text-white/35 hover:text-white/70 text-xs transition-colors">← Back to home</a>
       </div>
@@ -147,8 +147,8 @@ export default function PayPage() {
             {/* Header */}
             <div className="text-center mb-10">
               <div className="inline-flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 btn-glow rounded-xl flex items-center justify-center text-white font-black">P</div>
-                <span className="font-black text-white text-xl">ProCareer<span style={{ color: accentColor }}>.</span></span>
+                <div className="w-9 h-9 btn-glow rounded-xl flex items-center justify-center text-white font-black">S</div>
+                <span className="font-black text-white text-xl">Shyam Pro <span style={{ color: accentColor }}>Services</span></span>
               </div>
               <h1 className="text-white font-black text-2xl mb-2">Service Payment</h1>
               <p className="text-white/40 text-sm">Fill in your details and pay securely via Razorpay.</p>

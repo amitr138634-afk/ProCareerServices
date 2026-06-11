@@ -14,10 +14,10 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ProCareerLaunchpad — AI LinkedIn & ATS Optimizer",
+  title: "Shyam Pro Services — AI LinkedIn & ATS Optimizer",
   description:
     "LinkedIn profile optimizer + ATS resume scanner powered by AI. Free to start, ₹200 for full access.",
-  keywords: "LinkedIn optimization, ATS scanner, AI resume, career coaching, ProCareerLaunchpad",
+  keywords: "LinkedIn optimization, ATS scanner, AI resume, career coaching, Shyam Pro Services",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

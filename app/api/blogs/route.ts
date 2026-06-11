@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   if (!isAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const body = await req.json();
-    const { title, excerpt, content, coverImage = "", tags = [], author = "ProCareerLaunchpad Team", published = false } = body;
+    const { title, excerpt, content, coverImage = "", tags = [], author = "Shyam Pro Services Team", published = false } = body;
     if (!title || !content) return NextResponse.json({ error: "title and content required" }, { status: 400 });
     const slug = body.slug?.trim() || slugify(title);
     const blog = await saveBlog({ title, slug, excerpt: excerpt || "", content, coverImage, tags, author, published });

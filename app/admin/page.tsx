@@ -62,7 +62,7 @@ export default function AdminPage() {
   const [storyFile, setStoryFile] = useState<File | null>(null);
   const [storySubmitting, setStorySubmitting] = useState(false);
   const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
-  const [blogForm, setBlogForm] = useState({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", author: "ProCareerLaunchpad Team", published: false });
+  const [blogForm, setBlogForm] = useState({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", author: "Shyam Pro Services Team", published: false });
   const [blogSubmitting, setBlogSubmitting] = useState(false);
   const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -264,22 +264,22 @@ export default function AdminPage() {
     {
       label: "Payment Reminder",
       subject: "Complete your payment — {{service}} is waiting for you!",
-      body: `<b>Hi there,</b><br/><br/>We noticed you haven't completed your payment for <b>{{service}}</b> yet.<br/><br/>Your ₹200 payment unlocks the full AI analysis — don't miss out!<br/><br/><a href="${process.env.NEXT_PUBLIC_SITE_URL || ""}/pay" style="background:#10B981;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Complete Payment →</a><br/><br/>Need help? Just reply to this email.<br/><br/>— ProCareerLaunchpad Team`,
+      body: `<b>Hi there,</b><br/><br/>We noticed you haven't completed your payment for <b>{{service}}</b> yet.<br/><br/>Your ₹200 payment unlocks the full AI analysis — don't miss out!<br/><br/><a href="${process.env.NEXT_PUBLIC_SITE_URL || ""}/pay" style="background:#10B981;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Complete Payment →</a><br/><br/>Need help? Just reply to this email.<br/><br/>— Shyam Pro Services Team`,
     },
     {
       label: "Resume Delivered",
       subject: "Your Resume is Ready! 🎉",
-      body: `<b>Hi there,</b><br/><br/>Great news — your professionally crafted resume is now ready!<br/><br/>Please find it attached to this email. We've tailored it to highlight your strengths and align with your target role.<br/><br/><b>What to do next:</b><br/>• Review the resume carefully<br/>• Reply if you'd like any revisions<br/>• Start applying — you're ready!<br/><br/>Best of luck with your applications!<br/><br/>— ProCareerLaunchpad Team`,
+      body: `<b>Hi there,</b><br/><br/>Great news — your professionally crafted resume is now ready!<br/><br/>Please find it attached to this email. We've tailored it to highlight your strengths and align with your target role.<br/><br/><b>What to do next:</b><br/>• Review the resume carefully<br/>• Reply if you'd like any revisions<br/>• Start applying — you're ready!<br/><br/>Best of luck with your applications!<br/><br/>— Shyam Pro Services Team`,
     },
     {
       label: "Follow-up / Check-in",
       subject: "How is your job search going? 👋",
-      body: `<b>Hi there,</b><br/><br/>We wanted to check in and see how your job search is going after using our LinkedIn Optimizer!<br/><br/>Have you been getting more profile views or recruiter messages? We'd love to hear your experience.<br/><br/>If you need any further help — ATS resume scanning, career counseling, or portfolio creation — we're just a reply away.<br/><br/><a href="${process.env.NEXT_PUBLIC_SITE_URL || ""}" style="background:#10B981;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Explore Services →</a><br/><br/>— ProCareerLaunchpad Team`,
+      body: `<b>Hi there,</b><br/><br/>We wanted to check in and see how your job search is going after using our LinkedIn Optimizer!<br/><br/>Have you been getting more profile views or recruiter messages? We'd love to hear your experience.<br/><br/>If you need any further help — ATS resume scanning, career counseling, or portfolio creation — we're just a reply away.<br/><br/><a href="${process.env.NEXT_PUBLIC_SITE_URL || ""}" style="background:#10B981;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Explore Services →</a><br/><br/>— Shyam Pro Services Team`,
     },
     {
       label: "Service Complete",
       subject: "Your order is complete ✅",
-      body: `<b>Hi there,</b><br/><br/>We're happy to let you know that your service has been completed successfully!<br/><br/>If you have any questions or need revisions, please reply to this email directly.<br/><br/>Thank you for choosing ProCareerLaunchpad. We look forward to supporting your career journey!<br/><br/>— ProCareerLaunchpad Team`,
+      body: `<b>Hi there,</b><br/><br/>We're happy to let you know that your service has been completed successfully!<br/><br/>If you have any questions or need revisions, please reply to this email directly.<br/><br/>Thank you for choosing Shyam Pro Services. We look forward to supporting your career journey!<br/><br/>— Shyam Pro Services Team`,
     },
   ];
 
@@ -533,7 +533,7 @@ export default function AdminPage() {
         body: JSON.stringify({ ...blogForm, tags }),
       });
     }
-    setBlogForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", author: "ProCareerLaunchpad Team", published: false });
+    setBlogForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", author: "Shyam Pro Services Team", published: false });
     setBlogSubmitting(false);
     await fetchData(savedPw, savedEmail);
   };
@@ -569,8 +569,8 @@ export default function AdminPage() {
       <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4">
         <div className="w-full max-w-sm">
           <div className="flex items-center justify-center gap-2 mb-8">
-            <div className="w-8 h-8 btn-glow rounded-lg flex items-center justify-center text-white font-black text-sm">P</div>
-            <span className="font-black text-white text-lg">ProCareerLaunchpad</span>
+            <div className="w-8 h-8 btn-glow rounded-lg flex items-center justify-center text-white font-black text-sm">S</div>
+            <span className="font-black text-white text-lg">Shyam Pro Services</span>
           </div>
           <div className="glass-dark rounded-2xl p-8 border border-white/8">
             <h1 className="text-white font-black text-xl mb-1 text-center">Admin Panel</h1>
@@ -613,9 +613,9 @@ export default function AdminPage() {
       {/* Top bar */}
       <div className="glass-dark border-b border-white/8 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-xs">P</div>
+          <div className="w-7 h-7 btn-glow rounded-lg flex items-center justify-center text-white font-black text-xs">S</div>
           <span className="font-black text-white">Admin Panel</span>
-          <span className="text-white/20 text-xs">· ProCareerLaunchpad</span>
+          <span className="text-white/20 text-xs">· Shyam Pro Services</span>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => fetchData(savedPw, savedEmail)} className="text-white/30 hover:text-white/70 text-xs transition-colors">↺ Refresh</button>
@@ -2053,7 +2053,7 @@ export default function AdminPage() {
               <div className="flex items-center justify-between mb-2">
                 <p className="text-white/60 text-sm font-bold">{editingBlogId ? "Edit Blog Post" : "Write New Blog Post"}</p>
                 {editingBlogId && (
-                  <button type="button" onClick={() => { setEditingBlogId(null); setBlogForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", author: "ProCareerLaunchpad Team", published: false }); }}
+                  <button type="button" onClick={() => { setEditingBlogId(null); setBlogForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", author: "Shyam Pro Services Team", published: false }); }}
                     className="text-white/30 hover:text-white/60 text-xs transition-colors">✕ Cancel edit</button>
                 )}
               </div>

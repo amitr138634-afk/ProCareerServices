@@ -64,8 +64,8 @@ function LoginContent() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-2">
-            <div className="w-9 h-9 btn-glow rounded-xl flex items-center justify-center text-white font-black">P</div>
-            <span className="font-black text-white text-xl tracking-tight">ProCareer<span className="gradient-text">.</span></span>
+            <div className="w-9 h-9 btn-glow rounded-xl flex items-center justify-center text-white font-black">S</div>
+            <span className="font-black text-white text-xl tracking-tight">Shyam Pro <span className="gradient-text">Services</span></span>
           </div>
           <p className="text-white/40 text-sm">AI-powered career tools</p>
         </div>

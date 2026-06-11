@@ -121,7 +121,7 @@ function buildPrompt(profileData: Record<string, string>, stepResponses: Record<
   }
   const analysis = analysisLines.join("\n\n");
 
-  return `You are a senior LinkedIn career coach at ProCareerLaunchpad, India's leading career optimization platform.
+  return `You are a senior LinkedIn career coach at Shyam Pro Services, India's leading career optimization platform.
 
 Based on this candidate's LinkedIn profile analysis, generate a highly personalized Step-by-Step Action Guide JSON.
 
