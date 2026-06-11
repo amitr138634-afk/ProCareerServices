@@ -62,13 +62,13 @@ const SERVICES: Record<string, Service> = {
 };
 
 const DEFAULT_SERVICE: Service = {
-  slug: "digital-marketing",
-  label: "Digital Marketing",
-  short: "Digital Marketing",
+  slug: "marketing",
+  label: "Marketing",
+  short: "Marketing",
   blurb:
-    "Tell us what you're after and our team will put together a tailored growth plan for your business.",
-  gradient: "linear-gradient(90deg,#10B981,#0EA5E9)",
-  accent: "#10B981",
+    "SEO, social media, Google & Meta ads, and email marketing — tell us your goals and our team will put together a tailored growth plan for your business.",
+  gradient: "linear-gradient(90deg,#F59E0B,#EF4444)",
+  accent: "#F59E0B",
 };
 
 function MarketingForm() {

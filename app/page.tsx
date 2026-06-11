@@ -103,21 +103,21 @@ const HERO_SLIDES: HeroSlide[] = [
     ),
   },
   {
-    id: "content",
+    id: "marketing",
     color: "#F59E0B",
     gradientFrom: "#F59E0B18",
     gradientTo: "#EF444408",
-    badge: "Human + AI · ₹500/week",
+    badge: "Growth · Free Consultation",
     badgeColor: "text-amber-400 bg-amber-400/10 border-amber-400/25",
-    title: "Content Creation",
-    tagline: "A personal brand that works while you sleep.",
-    desc: "Monthly content retainer — we create scroll-stopping content for LinkedIn, Instagram, Facebook, and your website. Reels, posts, blogs, carousels — AI-drafted, human-refined, posted consistently so you stay visible and grow.",
-    features: ["LinkedIn posts, carousels & articles", "Instagram & Facebook reels + posts", "Blog writing for website / Medium", "Content calendar & scheduling", "Monthly analytics & growth report"],
-    cta: "Get Content Plan →",
-    href: "/content",
+    title: "Marketing",
+    tagline: "Get found, get followers, get customers.",
+    desc: "Full-funnel digital marketing for your brand — SEO, social media, paid ads, and email. We drive traffic, leads, and sales so you can focus on running your business.",
+    features: ["SEO", "SMM", "Google Ads", "Meta Ads", "Email Marketing"],
+    cta: "Get Free Quote →",
+    href: "/marketing",
     icon: (
       <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
       </svg>
     ),
   },
@@ -349,22 +349,22 @@ const SERVICES: ServiceCard[] = [
     featureColor: "text-orange-400",
   },
   {
-    id: "content",
+    id: "marketing",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
       </svg>
     ),
     color: "#F59E0B",
-    badge: "Human + AI · ₹500/week",
+    badge: "Free Consultation",
     badgeBg: "bg-yellow-500/10 border-yellow-500/25 text-yellow-400",
-    title: "Content Creation",
-    subtitle: "Multi-platform content & brand growth",
-    desc: "Monthly retainer — we create and manage content across LinkedIn, Instagram, Facebook, and your website. Reels, posts, blogs, carousels — AI-drafted, human-refined, posted consistently so you grow.",
-    features: ["LinkedIn posts, carousels & articles", "Instagram & Facebook reels + posts", "Blog writing for website / Medium", "Content calendar & scheduling", "Monthly analytics & growth report"],
-    cta: "Get Content Plan →",
+    title: "Marketing",
+    subtitle: "Grow your business online",
+    desc: "Full-funnel digital marketing — SEO, social media, paid ads, and email campaigns that bring you traffic, leads, and sales.",
+    features: ["SEO", "SMM", "Google Ads", "Meta Ads", "Email Marketing"],
+    cta: "Get Free Quote →",
     ctaStyle: "amber-btn",
-    href: "/content",
+    href: "/marketing",
     borderColor: "border-yellow-500/20",
     featureColor: "text-yellow-400",
   },
@@ -427,106 +427,6 @@ const SERVICES: ServiceCard[] = [
     href: "/webdev",
     borderColor: "border-cyan-500/20",
     featureColor: "text-cyan-400",
-  },
-  {
-    id: "seo",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 14l3-3 3 3 5-6" />
-      </svg>
-    ),
-    color: "#22C55E",
-    badge: "Free Consultation",
-    badgeBg: "bg-green-500/10 border-green-500/25 text-green-400",
-    title: "SEO",
-    subtitle: "Rank higher, get found on Google",
-    desc: "On-page, technical, and content SEO to push your website up Google's rankings and bring in steady, qualified organic traffic.",
-    features: ["Keyword research & strategy", "On-page & technical SEO", "Content optimisation", "Backlink building", "Monthly ranking reports"],
-    cta: "Get Free Quote →",
-    ctaStyle: "seo",
-    href: "/marketing?service=seo",
-    borderColor: "border-green-500/20",
-    featureColor: "text-green-400",
-  },
-  {
-    id: "smm",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-      </svg>
-    ),
-    color: "#38BDF8",
-    badge: "Free Consultation",
-    badgeBg: "bg-sky-500/10 border-sky-500/25 text-sky-400",
-    title: "Social Media Marketing",
-    subtitle: "Grow your audience on every platform",
-    desc: "End-to-end social media management across Instagram, Facebook, and LinkedIn — strategy, content, posting, and community engagement that grows your brand.",
-    features: ["Platform strategy & calendar", "Post & creative design", "Community management", "Hashtag & reach optimisation", "Monthly growth analytics"],
-    cta: "Get Free Quote →",
-    ctaStyle: "smm",
-    href: "/marketing?service=smm",
-    borderColor: "border-sky-500/20",
-    featureColor: "text-sky-400",
-  },
-  {
-    id: "google-ads",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-      </svg>
-    ),
-    color: "#EF4444",
-    badge: "Free Consultation",
-    badgeBg: "bg-red-500/10 border-red-500/25 text-red-400",
-    title: "Google Ads",
-    subtitle: "High-intent leads from Search & YouTube",
-    desc: "Search, Display, and YouTube ad campaigns built and optimised to bring you qualified leads at the lowest possible cost-per-click.",
-    features: ["Campaign setup & structure", "Keyword & audience targeting", "Ad copy & creative", "Conversion tracking", "Budget & bid optimisation"],
-    cta: "Get Free Quote →",
-    ctaStyle: "google-ads",
-    href: "/marketing?service=google-ads",
-    borderColor: "border-red-500/20",
-    featureColor: "text-red-400",
-  },
-  {
-    id: "meta-ads",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
-      </svg>
-    ),
-    color: "#3B82F6",
-    badge: "Free Consultation",
-    badgeBg: "bg-blue-500/10 border-blue-500/25 text-blue-400",
-    title: "Meta Ads",
-    subtitle: "Facebook & Instagram ads that convert",
-    desc: "Facebook and Instagram ad campaigns with sharp audience targeting, scroll-stopping creatives, and funnels engineered to convert clicks into customers.",
-    features: ["Audience & lookalike targeting", "Creative & copy production", "Funnel & landing strategy", "A/B testing", "ROAS optimisation"],
-    cta: "Get Free Quote →",
-    ctaStyle: "meta-ads",
-    href: "/marketing?service=meta-ads",
-    borderColor: "border-blue-500/20",
-    featureColor: "text-blue-400",
-  },
-  {
-    id: "email-marketing",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: "#FB7185",
-    badge: "Free Consultation",
-    badgeBg: "bg-rose-500/10 border-rose-500/25 text-rose-400",
-    title: "Email Marketing",
-    subtitle: "Nurture leads & drive repeat sales",
-    desc: "Automated email funnels, newsletters, and broadcast campaigns that nurture your leads, win back customers, and drive consistent repeat business.",
-    features: ["Email funnel & automation setup", "Newsletter design & copy", "List segmentation", "Broadcast campaigns", "Open & click-rate reporting"],
-    cta: "Get Free Quote →",
-    ctaStyle: "email-marketing",
-    href: "/marketing?service=email-marketing",
-    borderColor: "border-rose-500/20",
-    featureColor: "text-rose-400",
   },
   {
     id: "courses",
@@ -957,9 +857,9 @@ export default function HomePage() {
                   highlight: false,
                 },
                 {
-                  name: "Content Creation", price: "₹500", model: "Per week",
-                  color: "#F59E0B", href: "/content", cta: "Get Plan →",
-                  features: ["Reels, posts & blogs", "All platforms", "Monthly analytics"],
+                  name: "Marketing", price: "Custom", model: "Per project",
+                  color: "#F59E0B", href: "/marketing", cta: "Get Free Quote →",
+                  features: ["SEO & social media", "Google & Meta ads", "Email marketing"],
                   highlight: false,
                 },
               ].map((p) => (
@@ -1190,7 +1090,7 @@ export default function HomePage() {
               <p className="text-white/70 font-bold text-sm mb-3">Services</p>
               <div className="space-y-2">
                 <a href="/resume" className="block text-white/35 hover:text-white text-xs transition-colors">Resume Creation</a>
-                <a href="/content" className="block text-white/35 hover:text-white text-xs transition-colors">Content Creation</a>
+                <a href="/marketing" className="block text-white/35 hover:text-white text-xs transition-colors">Marketing</a>
                 <a href="/portfolio" className="block text-white/35 hover:text-white text-xs transition-colors">Portfolio Creation</a>
                 <a href="/career" className="block text-white/35 hover:text-white text-xs transition-colors">Career Counseling</a>
                 <a href="/pay" className="block text-brand-teal/60 hover:text-brand-teal text-xs transition-colors font-bold">💳 Pay for a Service</a>
