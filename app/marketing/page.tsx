@@ -71,6 +71,15 @@ const DEFAULT_SERVICE: Service = {
   accent: "#F59E0B",
 };
 
+const MARKETING_TYPES = [
+  "SEO",
+  "SMM",
+  "Google Ads",
+  "Meta Ads",
+  "Email Marketing",
+  "Custom",
+];
+
 function MarketingForm() {
   const params = useSearchParams();
   const key = (params.get("service") ?? "").toLowerCase();
@@ -81,6 +90,8 @@ function MarketingForm() {
     lastName: "",
     email: "",
     contactNumber: "",
+    marketingType: "",
+    description: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -94,13 +105,19 @@ function MarketingForm() {
     const lastName = form.lastName.trim();
     const email = form.email.trim();
     const contactNumber = form.contactNumber.trim();
+    const marketingType = form.marketingType;
+    const description = form.description.trim();
 
-    if (!firstName || !lastName || !email || !contactNumber) {
+    if (!firstName || !lastName || !email || !contactNumber || !marketingType) {
       setError("All fields are required.");
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Please enter a valid email address.");
+      return;
+    }
+    if (marketingType === "Custom" && !description) {
+      setError("Please describe what you're looking for.");
       return;
     }
 
@@ -111,8 +128,13 @@ function MarketingForm() {
     body.append("name", `${firstName} ${lastName}`);
     body.append("email", email);
     body.append("phone", contactNumber);
-    body.append("serviceType", service.slug);
-    body.append("message", `Lead enquiry for ${service.label}.`);
+    body.append("serviceType", `Marketing — ${marketingType}`);
+    body.append(
+      "message",
+      marketingType === "Custom"
+        ? description
+        : `Interested in ${marketingType} marketing.`
+    );
 
     try {
       const res = await fetch("/api/service-request", { method: "POST", body });
@@ -246,6 +268,41 @@ function MarketingForm() {
               className={inputCls}
             />
           </div>
+
+          <div>
+            <label className="text-white/60 text-xs font-semibold mb-1.5 block">
+              What kind of marketing are you looking for? *
+            </label>
+            <select
+              required
+              value={form.marketingType}
+              onChange={(e) => set("marketingType", e.target.value)}
+              className="w-full bg-[#0D0D2B] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none text-white/80"
+            >
+              <option value="">Select an option</option>
+              {MARKETING_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {form.marketingType === "Custom" && (
+            <div>
+              <label className="text-white/60 text-xs font-semibold mb-1.5 block">
+                Describe what you&#39;re looking for *
+              </label>
+              <textarea
+                required
+                value={form.description}
+                onChange={(e) => set("description", e.target.value)}
+                rows={4}
+                placeholder="Tell us about your business, goals, and the kind of marketing help you need…"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm resize-none focus:outline-none placeholder-white/20"
+              />
+            </div>
+          )}
 
           {error && <p className="text-red-400 text-xs">{error}</p>}
 
