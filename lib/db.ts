@@ -39,6 +39,9 @@ export interface FeedbackRecord {
   id: string; name: string; email: string; service: string;
   rating: number; message: string; createdAt: string; approved: boolean;
 }
+export interface SubscriberRecord {
+  id: string; email: string; source: string; createdAt: string;
+}
 export interface StoryRecord {
   id: string; name: string; role: string; result: string;
   story: string; imageUrl: string; createdAt: string;
@@ -86,6 +89,9 @@ interface DataStore {
   getAllFeedbackAdmin(): Promise<FeedbackRecord[]>;
   approveFeedback(id: string, approved: boolean): Promise<void>;
   deleteFeedback(id: string): Promise<void>;
+  saveSubscriber(email: string, source?: string): Promise<{ record: SubscriberRecord; created: boolean }>;
+  getAllSubscribers(): Promise<SubscriberRecord[]>;
+  deleteSubscriber(id: string): Promise<void>;
   saveStory(r: Omit<StoryRecord, "id" | "createdAt">): Promise<StoryRecord>;
   getAllStories(): Promise<StoryRecord[]>;
   deleteStory(id: string): Promise<void>;
@@ -399,6 +405,26 @@ class MongoStore implements DataStore {
     return db.collection<FeedbackRecord>("feedback").find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
   }
 
+  async saveSubscriber(email: string, source = "website"): Promise<{ record: SubscriberRecord; created: boolean }> {
+    const db = await this.db();
+    const normalized = email.trim().toLowerCase();
+    const existing = await db.collection<SubscriberRecord>("subscribers").findOne({ email: normalized }, { projection: { _id: 0 } });
+    if (existing) return { record: existing, created: false };
+    const record: SubscriberRecord = { id: newId("sub"), email: normalized, source, createdAt: new Date().toISOString() };
+    await db.collection("subscribers").insertOne({ ...record });
+    return { record, created: true };
+  }
+
+  async getAllSubscribers(): Promise<SubscriberRecord[]> {
+    const db = await this.db();
+    return db.collection<SubscriberRecord>("subscribers").find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
+  }
+
+  async deleteSubscriber(id: string): Promise<void> {
+    const db = await this.db();
+    await db.collection("subscribers").deleteOne({ id });
+  }
+
   async approveFeedback(id: string, approved: boolean): Promise<void> {
     const db = await this.db();
     await db.collection("feedback").updateOne({ id }, { $set: { approved } });
@@ -500,6 +526,7 @@ class MemoryStore implements DataStore {
   private stories: StoryRecord[];
   private blogs: BlogRecord[];
   private orders: OrderRecord[];
+  private subscribers: SubscriberRecord[];
 
   constructor() {
     // Load persisted data; fall back to seeds only when no file exists yet
@@ -507,6 +534,7 @@ class MemoryStore implements DataStore {
     this.blogs   = readData<BlogRecord[]>("blogs.json")   ?? [...SEED_BLOGS];
     this.feedback = readData<FeedbackRecord[]>("feedback.json") ?? [];
     this.orders   = readData<OrderRecord[]>("orders.json") ?? [];
+    this.subscribers = readData<SubscriberRecord[]>("subscribers.json") ?? [];
   }
 
   async markUserPaid(email: string, service: string, razorpayId?: string, amount = 200): Promise<void> {
@@ -594,6 +622,23 @@ class MemoryStore implements DataStore {
   async deleteFeedback(id: string): Promise<void> {
     this.feedback = this.feedback.filter((f) => f.id !== id);
     writeData("feedback.json", this.feedback);
+  }
+
+  async saveSubscriber(email: string, source = "website"): Promise<{ record: SubscriberRecord; created: boolean }> {
+    const normalized = email.trim().toLowerCase();
+    const existing = this.subscribers.find((s) => s.email === normalized);
+    if (existing) return { record: existing, created: false };
+    const record: SubscriberRecord = { id: newId("sub"), email: normalized, source, createdAt: new Date().toISOString() };
+    this.subscribers.unshift(record);
+    writeData("subscribers.json", this.subscribers);
+    return { record, created: true };
+  }
+
+  async getAllSubscribers(): Promise<SubscriberRecord[]> { return this.subscribers; }
+
+  async deleteSubscriber(id: string): Promise<void> {
+    this.subscribers = this.subscribers.filter((s) => s.id !== id);
+    writeData("subscribers.json", this.subscribers);
   }
 
   async saveStory(r: Omit<StoryRecord, "id" | "createdAt">): Promise<StoryRecord> {
@@ -696,6 +741,9 @@ export const getApprovedFeedback = () => store.getApprovedFeedback();
 export const getAllFeedbackAdmin = () => store.getAllFeedbackAdmin();
 export const approveFeedback = (id: string, approved: boolean) => store.approveFeedback(id, approved);
 export const deleteFeedback = (id: string) => store.deleteFeedback(id);
+export const saveSubscriber = (email: string, source?: string) => store.saveSubscriber(email, source);
+export const getAllSubscribers = () => store.getAllSubscribers();
+export const deleteSubscriber = (id: string) => store.deleteSubscriber(id);
 export const saveStory = (r: Omit<StoryRecord, "id" | "createdAt">) => store.saveStory(r);
 export const getAllStories = () => store.getAllStories();
 export const deleteStory = (id: string) => store.deleteStory(id);

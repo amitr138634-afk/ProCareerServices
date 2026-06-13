@@ -8,6 +8,7 @@ import ContactForm from "@/components/ContactForm";
 import SuccessStories from "@/components/SuccessStories";
 import FAQ from "@/components/FAQ";
 import FeedbackForm from "@/components/FeedbackForm";
+import NewsletterSignup from "@/components/NewsletterSignup";
 
 interface ServiceCard {
   id: string;
@@ -1077,6 +1078,10 @@ export default function HomePage() {
                 <span className="font-black text-white">Shyam Pro Services</span>
               </div>
               <p className="text-white/35 text-xs leading-relaxed">AI-powered career tools and human expertise to help you get hired faster.</p>
+              <div className="mt-4">
+                <p className="text-white/70 font-bold text-xs mb-2">Get free career &amp; marketing tips</p>
+                <NewsletterSignup source="footer" />
+              </div>
             </div>
             <div>
               <p className="text-white/70 font-bold text-sm mb-3">AI Tools</p>
