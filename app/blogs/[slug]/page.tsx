@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import ShareButtons from "@/components/ShareButtons";
 
 interface Blog {
   id: string; title: string; slug: string; excerpt: string;
@@ -164,6 +165,11 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           {/* Content */}
           <div className="prose prose-invert max-w-none">
             {renderContent(blog.content)}
+          </div>
+
+          {/* Share */}
+          <div className="mt-10 pt-6 border-t border-white/8">
+            <ShareButtons title={blog.title} />
           </div>
 
           {/* CTA */}

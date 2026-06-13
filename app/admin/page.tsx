@@ -10,7 +10,7 @@ interface FeedbackItem { id: string; name: string; email: string; service: strin
 interface StoryItem { id: string; name: string; role: string; result: string; story: string; imageUrl: string; createdAt: string; }
 interface BlogItem { id: string; title: string; slug: string; excerpt: string; content: string; coverImage: string; tags: string[]; author: string; published: boolean; createdAt: string; updatedAt: string; }
 
-type Tab = "overview" | "users" | "payments" | "email" | "requests" | "stories" | "feedback" | "blogs";
+type Tab = "overview" | "users" | "payments" | "email" | "requests" | "stories" | "feedback" | "blogs" | "newsletter";
 type OrderService = "linkedin" | "naukri" | "ats" | "resume" | "portfolio" | "content";
 type OrderStatus = "new" | "in_progress" | "review" | "done" | "cancelled";
 type PaymentStatus = "pending" | "paid";
@@ -405,6 +405,38 @@ export default function AdminPage() {
     "x-admin-email": em,
   }), []);
 
+  // ── Newsletter ──
+  const [nlSubject, setNlSubject] = useState("");
+  const [nlBody, setNlBody] = useState("");
+  const [nlSending, setNlSending] = useState<"" | "test" | "all">("");
+  const [nlResult, setNlResult] = useState("");
+  const [nlCount, setNlCount] = useState<number | null>(null);
+
+  const loadNlCount = async () => {
+    try {
+      const res = await fetch("/api/newsletter", { headers: adminHeaders(savedPw, savedEmail) });
+      if (res.ok) { const j = await res.json(); setNlCount(j.count ?? 0); }
+    } catch { /* ignore */ }
+  };
+
+  const sendNewsletterEmail = async (mode: "test" | "all") => {
+    if (!nlSubject.trim() || !nlBody.trim()) { setNlResult("Subject and message are required."); return; }
+    if (mode === "all" && !confirm(`Send this email to all ${nlCount ?? ""} subscriber(s)?`)) return;
+    setNlSending(mode); setNlResult("");
+    try {
+      const res = await fetch("/api/admin/send-newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...adminHeaders(savedPw, savedEmail) },
+        body: JSON.stringify({ subject: nlSubject, body: nlBody, test: mode === "test" }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || "Failed to send");
+      setNlResult(mode === "test" ? "✓ Test sent to your inbox." : `✓ Sent to ${j.sent} subscriber(s).`);
+    } catch (e) {
+      setNlResult("✗ " + (e instanceof Error ? e.message : "Failed to send"));
+    } finally { setNlSending(""); }
+  };
+
   const fetchOrders = useCallback(async (pw: string, em: string) => {
     const res = await fetch("/api/admin/orders", { headers: adminHeaders(pw, em) });
     if (res.ok) { const j = await res.json(); setOrders(j.orders ?? []); }
@@ -606,6 +638,7 @@ export default function AdminPage() {
     { id: "stories", label: "Stories", count: stories.length },
     { id: "feedback", label: "Feedback", count: feedback.filter((f) => !f.approved).length },
     { id: "blogs", label: "Blogs", count: blogs.length },
+    { id: "newsletter", label: "Newsletter", count: nlCount ?? undefined },
   ];
 
   return (
@@ -2164,6 +2197,54 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {tab === "newsletter" && (
+          <div className="max-w-2xl space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-black text-white">Newsletter</h2>
+                <p className="text-white/40 text-xs">Email your subscribers a tips broadcast.</p>
+              </div>
+              <button onClick={loadNlCount}
+                className="text-xs font-bold px-3 py-1.5 rounded-lg glass border border-white/10 text-white/60 hover:text-white transition-colors whitespace-nowrap">
+                {nlCount === null ? "Load count" : `${nlCount} subscriber${nlCount === 1 ? "" : "s"} · refresh`}
+              </button>
+            </div>
+
+            <div className="glass rounded-2xl p-5 border border-white/8 space-y-4">
+              <div>
+                <label className="text-white/60 text-xs font-semibold mb-1.5 block">Subject *</label>
+                <input value={nlSubject} onChange={(e) => setNlSubject(e.target.value)}
+                  placeholder="3 LinkedIn tips to get noticed this week"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-teal/50 placeholder-white/20" />
+              </div>
+              <div>
+                <label className="text-white/60 text-xs font-semibold mb-1.5 block">Message *</label>
+                <textarea value={nlBody} onChange={(e) => setNlBody(e.target.value)} rows={8}
+                  placeholder={"Hi there,\n\nHere are this week's tips...\n\nWrite normally — line breaks are kept."}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/80 text-sm resize-none focus:outline-none focus:border-brand-teal/50 placeholder-white/20" />
+                <p className="text-white/30 text-[11px] mt-1">Plain text. Blank lines = paragraphs. Your branded header &amp; footer are added automatically.</p>
+              </div>
+
+              {nlResult && (
+                <p className={`text-xs font-semibold ${nlResult.startsWith("✓") ? "text-brand-teal" : "text-red-400"}`}>{nlResult}</p>
+              )}
+
+              <div className="flex gap-3 flex-wrap">
+                <button onClick={() => sendNewsletterEmail("test")} disabled={nlSending !== ""}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold border border-white/15 text-white/80 hover:bg-white/5 transition-colors disabled:opacity-50">
+                  {nlSending === "test" ? "Sending…" : "Send test to me"}
+                </button>
+                <button onClick={() => sendNewsletterEmail("all")} disabled={nlSending !== ""}
+                  className="btn-glow text-white font-bold text-xs px-5 py-2.5 rounded-xl disabled:opacity-50">
+                  {nlSending === "all" ? "Sending…" : "Send to all subscribers →"}
+                </button>
+              </div>
+            </div>
+
+            <p className="text-white/30 text-[11px]">Always “Send test to me” first to preview. Recipients are BCC&#39;d — they can&#39;t see each other.</p>
           </div>
         )}
 

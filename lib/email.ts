@@ -50,6 +50,37 @@ export async function sendEmailTo({
   if (error) throw new Error(error.message);
 }
 
+// Send to many subscribers via BCC (recipients hidden from each other), batched
+// to stay within Resend's 50-recipients-per-message limit.
+export async function sendNewsletter({
+  subject,
+  html,
+  recipients,
+}: {
+  subject: string;
+  html: string;
+  recipients: string[];
+}): Promise<{ sent: number }> {
+  const unique = Array.from(
+    new Set(recipients.map((r) => r.trim().toLowerCase()).filter(Boolean))
+  );
+  const BATCH = 49; // 49 bcc + 1 "to" = 50 max per Resend message
+  let sent = 0;
+  for (let i = 0; i < unique.length; i += BATCH) {
+    const batch = unique.slice(i, i + BATCH);
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: [TO],
+      bcc: batch,
+      subject,
+      html,
+    });
+    if (error) throw new Error(error.message);
+    sent += batch.length;
+  }
+  return { sent };
+}
+
 export function marketingTemplate(subject: string, bodyHtml: string) {
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#07071A;font-family:sans-serif">
   <div style="max-width:600px;margin:32px auto;background:#0d0d2b;border:1px solid #1e1e40;border-radius:12px;overflow:hidden">
